@@ -10,7 +10,7 @@ SensorIR::SensorIR(uint8_t sensor_pin):
 
 void SensorIR::init()
 {
-  pinMode(m_sensor_pin, OUTPUT);
+  Serial.begin(9600);
 }
 
 void SensorIR::runtime() {}

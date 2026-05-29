@@ -62,10 +62,12 @@ const uint8_t maxSpeed = 300.0;
 const uint8_t acceleration = 100.0;
 const uint8_t pinLed1 = 8;
 const uint8_t pinLed2 = 9;
+const uint8_t pinSensor = A11;
 
 Motor motor(pinStep, pinDir, maxSpeed, acceleration);
 LedController ledcontroller1(pinLed1);
 LedController ledcontroller2(pinLed2);
+SensorIR sensor(pinSensor);
 
 // Here we initialize the different functions we need to execute one time.
 // This a different instances of the classes. e.g. tranducer1 & tranducer2 are
@@ -75,22 +77,24 @@ void user_setup() {
   motor.init();
   ledcontroller1.init();
   ledcontroller2.init();
+  sensor.init();
   // dephased_pwm.init();
   // simple_ai.init();
   // tranducer1.init();
   // tranducer2.init();
   
-}
+};
 
 void user_loop() {
   motor.runtime();
   ledcontroller1.runtime();
   ledcontroller2.runtime();
+  sensor.runtime();
   // dephased_pwm.runtime();
   // simple_ai.runtime();
   // tranducer1.runtime();
   // tranducer2.runtime();
-}
+};
 
 int call_INITIALIZE() {
   return 0;
@@ -118,25 +122,33 @@ int16_t Set_ZERO() {
 
 // Funciones del controlador LED
 
-init16_t Set_INTENSITY1(int intensity) {
+int16_t Set_INTENSITY1(int intensity) {
   ledcontroller1.LedIntensity(intensity);
   return 0;
 }
 
-init16_t Call_TURNOFF1() {
+int16_t Call_TURNOFF1() {
   ledcontroller1.LedTurnOff();
   return 0;
 }
 
-init16_t Set_INTENSITY2(int intensity) {
+int16_t Set_INTENSITY2(int intensity) {
   ledcontroller2.LedIntensity(intensity);
   return 0;
 }
 
-init16_t Call_TURNOFF2() {
+int16_t Call_TURNOFF2() {
   ledcontroller2.LedTurnOff();
   return 0;
 }
+
+// Funciones del sensor IR
+
+int16_t QuerySignal() {
+  sensor.querySignal();
+  return 0;
+}
+
 
 /*
 int16_t set_FREQUENCY(uint32_t frequency) {

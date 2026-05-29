@@ -40,6 +40,9 @@ void wrapperSetLedIntensity1();
 void wrapperCallLedTurnOff1();
 void wrapperSetLedIntensity2();
 void wrapperCallLedTurnOff2();
+// Sensor functions
+void wrapperQuerySignal();
+
 
 /////////////////////////
 // PROYECTO SEMILLAS 

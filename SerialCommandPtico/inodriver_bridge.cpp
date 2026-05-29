@@ -118,6 +118,12 @@ void bridge_setup() {
   // Returns: OK or ERROR
   sCmd.addCommand("TURNOFFLED1", wrapperCallLedTurnOff2);
 
+  ////// Sensor
+
+  // Query:
+  // Returns: Value or ERROR
+  sCmd.addCommand("SENSOR?", wrapperQuerySignal);
+
   /////////////////
   //// PROYECTO SEMILLAS, no borrar.
   /////////////////
@@ -272,7 +278,7 @@ void wrapperSetLedIntensity1() {
   }
   int intensity = atol(arg);
   if (intensity > 0 && intensity < 255) {
-    set_INTENSITY1(intensity);
+    Set_INTENSITY1(intensity);
     ok();
   } else {
     error("invalid value, must be larger than 0 and smaller than 255");
@@ -298,7 +304,7 @@ void wrapperSetLedIntensity2() {
   }
   int intensity = atol(arg);
   if (intensity > 0 && intensity < 255) {
-    set_INTENSITY2(intensity);
+    Set_INTENSITY2(intensity);
     ok();
   } else {
     error("invalid value, must be larger than 0 and smaller than 255");
@@ -310,6 +316,16 @@ void wrapperCallLedTurnOff2() {
   if (err == 0) {
     ok();
   } else {
+    error_i(err);
+  }
+}
+
+// Sensor IR
+
+void wrapperQuerySignal(){
+  int err = QuerySignal();
+  if (err == 0) {} 
+  else {
     error_i(err);
   }
 }

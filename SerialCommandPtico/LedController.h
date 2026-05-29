@@ -17,7 +17,7 @@ class LedController
     void LedTurnOff();
 
   private:
-    uint8_t LED_pin;
-}
+    uint8_t m_LED_pin;
+};
 
 #endif

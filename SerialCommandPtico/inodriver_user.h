@@ -22,7 +22,9 @@
 #define inodriver_user_h
 
 #include <Arduino.h>
-#include "motor.h"
+#include "Motor.h"
+#include "LedController.h"
+#include "SensorIR.h"
 
 void user_setup();
 void user_loop();
@@ -38,6 +40,8 @@ int16_t Set_INTENSITY1(int intensity);
 int16_t Call_TURNOFF1();
 int16_t Set_INTENSITY2(int intensity);
 int16_t Call_TURNOFF2();
+// Sensor functions
+int16_t QuerySignal();
 
 /*
 int16_t set_MODE(PhaseControlMode);
@@ -53,4 +57,4 @@ int16_t call_ACQUIRE(uint32_t);
 int16_t call_GETDATA();
 */
 
-#endif // inodriver_user_h
+#endif // inodriver_user_
