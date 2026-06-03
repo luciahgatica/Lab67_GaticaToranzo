@@ -5,23 +5,55 @@
 #include "LedController.h"
 #include "Parking.h"
 
-const uint8_t pinDir = 48;
-const uint8_t pinStep = 50;
-const uint8_t maxSpeed = 300.0;
-const uint8_t acceleration = 100.0;
-const uint8_t pinSensor = A11;
-
-Motor motor(pinStep, pinDir, maxSpeed, acceleration);
-SensorIR sensor(pinSensor);
-
-void Parking_setup() {
-  motor.init();
-  sensor.init();
-}
-
 const int pasosPorRevolucion = 200;
 const float pasosPorGrado = pasosPorRevolucion / 360.0;
 float anguloActual = 0;
 long posicionActualPasos = 0;
 const int umbralSensor = 500; // si lectura > 500, estoy viendo algo brillante
 
+Parking::Parking(
+          Motor& motor,
+          SensorIR& sensor) 
+          : 
+          m_motor(motor),
+          m_sensor(sensor)
+          
+{
+}
+
+// sensor querySignal
+// motor
+// void moveRelative(long steps);
+// void moveAbsolute(long position);
+// void setCurrentPositionAsZero();
+// long queryPosition();
+// void moveToZero();
+
+bool Parking::Execute() {
+      m_motor.setCurrentPositionAsZero();
+
+      while (m_motor.queryPosition() < 100){
+            m_motor.moveRelative(1);
+            int lecture = m_sensor.querySignal();
+
+            if (lecture > 500){
+                  m_motor.setCurrentPositionAsZero();
+                  return true;
+                  }
+      }
+      if (position >= 100){
+            m_motor.moveRelative(-50);
+            m_motor.moveRelative(-50);
+
+            while (m_motor.queryPosition() > -100){
+                  m_motor.moveRelative(-1);
+                  int lecture = m_sensor.querySignal();
+
+                  if (lecture > 500){
+                        m_motor.setCurrentPositionAsZero();
+                        return true;
+                        }
+            }
+      }     
+      return false;
+}
