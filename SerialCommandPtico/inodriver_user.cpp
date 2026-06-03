@@ -62,12 +62,13 @@ const uint8_t maxSpeed = 300.0;
 const uint8_t acceleration = 100.0;
 const uint8_t pinLed1 = 8;
 const uint8_t pinLed2 = 9;
-const uint8_t pinSensor = A11;
+const uint8_t pinSensor = A1;
 
 Motor motor(pinStep, pinDir, maxSpeed, acceleration);
 LedController ledcontroller1(pinLed1);
 LedController ledcontroller2(pinLed2);
 SensorIR sensor(pinSensor);
+Parking parking(motor, sensor);
 
 // Here we initialize the different functions we need to execute one time.
 // This a different instances of the classes. e.g. tranducer1 & tranducer2 are
@@ -78,6 +79,7 @@ void user_setup() {
   ledcontroller1.init();
   ledcontroller2.init();
   sensor.init();
+  parking.Execute();
   // dephased_pwm.init();
   // simple_ai.init();
   // tranducer1.init();

@@ -8,9 +8,12 @@
 class Parking
 {
   public:
-  void Parking_setup();
-  void Parking_loop();
+  Parking(Motor& motor, SensorIR& sensor);
+
+  bool Execute();
   private:
+  Motor& m_motor;
+  SensorIR& m_sensor;
 };
 
 #endif
