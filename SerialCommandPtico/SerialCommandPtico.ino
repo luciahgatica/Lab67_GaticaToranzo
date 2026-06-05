@@ -18,11 +18,10 @@
 
 
 void setup() {
-  bridge_setup();
-  
-  user_setup();
-
   Serial.begin(BAUD_RATE);
+  bridge_setup();
+  user_setup();
+  Serial.println("Chanoscopio");
 }
 
 void loop() {

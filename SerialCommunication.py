@@ -36,10 +36,11 @@ class MotorEsferico(Motor):
         start_time = time.time()
         while not msg.startswith("Chanoscopio"):
             try:
+                print(repr(msg))
                 msg = serial.readline().decode('utf-8')
             except UnicodeDecodeError:
                 pass
-            if time.time() - start_time > 5:
+            if time.time() - start_time > 15:
                 raise TimeoutError("Arduino is not responding")
         return serial
     
@@ -47,8 +48,6 @@ class MotorEsferico(Motor):
         pass
 
     def rotate(self, degrees):
- # Actualmente los grados no se corresponden con el giro del motor 
-
         self._serial.write(f"STEP {degrees}\n".encode("ascii"))
         response = self._serial.readline().decode("ascii")
         return response
@@ -66,17 +65,15 @@ class MotorEsferico(Motor):
 
 
 if __name__ == "__main__":
-    motor = MotorEsferico("/dev/ttyACM0")
+    motor = MotorEsferico("COM9")
     for i in range(10):
         response = motor.rotate(180)
         #print(response)
-        print("POS: ", motor.get_theta())
+        print("POS: ", motor.get_phi())
         time.sleep(1)
         response = motor.rotate(10)
         time.sleep(1)
-        #print(motor._serial.readline().decode('ascii'))
-        #print(response)
-        print("POS: ", motor.get_theta())
+        print("POS: ", motor.get_phi())
 
 #    while True:
 #        response = motor.rotate(360)

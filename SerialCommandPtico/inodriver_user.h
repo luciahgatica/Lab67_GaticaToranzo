@@ -25,6 +25,7 @@
 #include "Motor.h"
 #include "LedController.h"
 #include "SensorIR.h"
+#include "Parking.h"
 
 void user_setup();
 void user_loop();
