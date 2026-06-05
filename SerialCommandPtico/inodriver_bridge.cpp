@@ -98,6 +98,10 @@ void bridge_setup() {
   // Returns: OK or ERROR
   sCmd.addCommand("ZERO", wrapperSet_ZERO);
 
+  // Setter:
+  // Returns: OK or ERROR
+  sCmd.addCommand("POS?", wrapperQueryPosition);
+
   ////// Led Controller
 
   // Setter:
@@ -265,6 +269,14 @@ void wrapperSet_ZERO() {
     error_i(err);
   }
 };
+
+void wrapperQueryPosition(){
+  int err = QueryPosition();
+  if (err == 0) {} 
+  else {
+    error_i(err);
+  }
+}
 
 // Led Controler
 

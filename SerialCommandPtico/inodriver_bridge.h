@@ -35,6 +35,7 @@ void wrapperCall_FINALIZE();
 // Motor functions 
 void wrapperSet_STEP(); 
 void wrapperSet_ZERO(); 
+void wrapperQueryPosition(); 
 // Led Controller functions
 void wrapperSetLedIntensity1();
 void wrapperCallLedTurnOff1();

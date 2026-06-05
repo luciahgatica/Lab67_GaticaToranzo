@@ -122,6 +122,11 @@ int16_t Set_ZERO() {
   return 0;
 }
 
+int16_t QueryPosition() {
+  motor.queryPosition();
+  return 0;
+}
+
 // Funciones del controlador LED
 
 int16_t Set_INTENSITY1(int intensity) {
