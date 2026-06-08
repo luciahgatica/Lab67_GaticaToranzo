@@ -1,11 +1,10 @@
 
 ///////////////////////////
-// Revisado 08-06-26 /////
+// Revisado 18-05-26 /////
 //////////////////////////
 
 /// 18-05. Agregado comentarios. 
 /// 27-05. Agregadas las funciones para el motor. 
-/// 08-06. Limpiado de codigos y agregado una copia para referenciar
 
 #include <Arduino.h>
 

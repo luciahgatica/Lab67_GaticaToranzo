@@ -45,4 +45,21 @@ void wrapperCallLedTurnOff2();
 void wrapperQuerySignal();
 
 
+/////////////////////////
+// PROYECTO SEMILLAS 
+/////////////////////////
+
+/*
+void wrapperSet_MODE(); 
+void wrapperSet_FREQUENCY(); 
+void wrapperSet_PHASE(); 
+void wrapperSet_DELTA(); 
+void wrapperSet_TIMESTEP();
+void wrapperCall_PAUSE();
+void wrapperSet_NSTEPS();
+void wrapperSet_TMODE();
+void wrapperCall_ACQUIRE();
+void wrapperCall_GETDATA();
+*/
+
 #endif // inodriver_bridge_h

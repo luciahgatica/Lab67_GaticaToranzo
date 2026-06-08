@@ -14,7 +14,6 @@
 // 18-05. Added comments. 
 // 27-05. Added functions for  Fourier ptycography, mainly motor controller.
 // 29-05. Added functions for Fourier ptycography microscope, mainly now for some LED Controllers with PWM.
-/// 08-06. Created a copy for future reference and deleted unnecessary lines.
 
 #include "inodriver_user.h"
 

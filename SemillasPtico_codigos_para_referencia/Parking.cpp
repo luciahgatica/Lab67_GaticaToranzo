@@ -21,6 +21,14 @@ Parking::Parking(
 {
 }
 
+// sensor querySignal
+// motor
+// void moveRelative(long steps);
+// void moveAbsolute(long position);
+// void setCurrentPositionAsZero();
+// long queryPosition();
+// void moveToZero();
+
 bool Parking::Execute() {
       m_motor.setCurrentPositionAsZero();
 

@@ -11,7 +11,7 @@
 /////////////////////////////////////////////////////////////
 
 /// 18-05. Added comments. 
-/// 08-06. Created a copy for future reference and deleted unnecessary lines.
+
 
 // If the bridge is the communication between the PC and the Arduino firmware
 // the inodriver_user is the communication between the Arduino user and the hardware.
@@ -44,5 +44,19 @@ int16_t Set_INTENSITY2(int intensity);
 int16_t Call_TURNOFF2();
 // Sensor functions
 int16_t QuerySignal();
+
+/*
+int16_t set_MODE(PhaseControlMode);
+int16_t set_FREQUENCY(uint32_t);
+int16_t set_PHASE(uint16_t);
+int16_t set_DELTA(int16_t); 
+int16_t set_TIMESTEP(int16_t);
+int16_t set_NSTEPS(int16_t);
+int16_t set_TMODE(int16_t, int16_t);
+int16_t call_PAUSE();
+
+int16_t call_ACQUIRE(uint32_t);
+int16_t call_GETDATA();
+*/
 
 #endif // inodriver_user_

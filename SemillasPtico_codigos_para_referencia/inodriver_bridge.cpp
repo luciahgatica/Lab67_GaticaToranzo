@@ -12,7 +12,7 @@
 
 
 /// 18-05. Added comments. 
-/// 08-06. Created a copy for future reference and deleted unnecessary lines.
+
 
 /////////////////////////////////////////////////////////////
 // The main purpose of the bridge is to translate serial communication in ASCII 
@@ -127,8 +127,88 @@ void bridge_setup() {
   // Query:
   // Returns: Value or ERROR
   sCmd.addCommand("SENSOR?", wrapperQuerySignal);
-}
 
+  /////////////////
+  //// PROYECTO SEMILLAS, no borrar.
+  /////////////////
+}
+/*
+  // Setter:
+  //   FREQUENCY <I>
+  // Returns: OK or ERROR 
+  sCmd.addCommand("FREQUENCY", wrapperSet_FREQUENCY); 
+
+  // Setter:
+  //   TMODE <I> <I>
+  // Returns: OK or ERROR  
+  sCmd.addCommand("TMODE", wrapperSet_TMODE); 
+
+  /////////////////
+  //// MODES
+  /////////////////
+
+  // Setter:
+  //   MODE <I>
+  //  <I> 
+  //    0: fixed
+  //    1: external
+  //    2: timed
+  //    3: triggered
+  // Returns: OK or ERROR 
+  sCmd.addCommand("MODE", wrapperSet_MODE); 
+
+  /////////////////
+  //// FIXED
+  /////////////////
+
+  // Setter:
+  //   PHASE <I>
+  // Returns: OK or ERROR 
+  sCmd.addCommand("PHASE", wrapperSet_PHASE); 
+
+  /////////////////
+  //// EXTERNAL 
+  /////////////////
+
+  /////////////////
+  //// TIMED 
+  //// TRIGGERED 
+  /////////////////
+
+  // Setter:
+  //   DELTA <I> 
+  // Returns: OK or ERROR 
+  sCmd.addCommand("DELTA", wrapperSet_DELTA); 
+
+  // Setter:
+  //   TIMESTEP <I> 
+  // Returns: OK or ERROR  
+  sCmd.addCommand("TIMESTEP", wrapperSet_TIMESTEP); 
+
+  // Call:
+  //   PAUSE
+  // Returns: OK or ERROR  
+  sCmd.addCommand("PAUSE", wrapperCall_PAUSE);   
+
+  // Setter:
+  //   NSTEPS <I>
+  // Returns: OK or ERROR  
+  sCmd.addCommand("NSTEPS", wrapperSet_NSTEPS); 
+
+  //////////////
+  /// FUTURE 
+  //////////////
+
+  // Call:
+  //   ACQUIRE <I>
+  // Returns: OK or ERROR  
+  sCmd.addCommand("ACQUIRE", wrapperCall_ACQUIRE); 
+
+  // Call:
+  //   GETDATA
+  // Returns: OK or ERROR  
+  sCmd.addCommand("GETDATA", wrapperCall_GETDATA); 
+*/
 //// Code 
 
 void getInfo() {
@@ -261,3 +341,196 @@ void wrapperQuerySignal(){
     error_i(err);
   }
 }
+
+////////////////////////////////
+// Proyecto Semillas, no borrar
+///////////////////////////////
+
+
+/*
+void wrapperSet_FREQUENCY() {
+  char *arg;
+  
+  arg = sCmd.next();
+  if (arg == NULL) {
+    error("No value stated");
+    return;
+  }
+  uint32_t frequency = atol(arg);
+  if (frequency > 0) {
+    set_FREQUENCY(frequency);
+    ok();
+  } else {
+    error("invalid value, must be larger than 0");
+  }
+}
+
+void wrapperSet_MODE() {
+  char *arg;
+  
+  arg = sCmd.next();
+  if (arg == NULL) {
+    error("No value stated");
+    return;
+  }
+  int mode = atoi(arg);
+  switch (mode) {
+    case 0:
+      set_MODE(fixed);
+      break;
+    case 1:
+      set_MODE(external);
+      break;
+    case 2:
+      set_MODE(timed);
+      break;
+    case 3:
+      set_MODE(triggered);
+      break;   
+    default:
+      error("invalid value, must be 0 (fixed), 1 (external), 2 (timed), 3 (triggered)");
+      break;
+  }
+  ok();
+};
+
+void wrapperSet_PHASE() {
+  char *arg;
+  
+  arg = sCmd.next();
+  if (arg == NULL) {
+    error("No value stated");
+    return;
+  }
+  int phase = atoi(arg);
+  if (phase >= 0 && phase <= 360) {
+    set_PHASE(phase);
+    ok();
+  } else {
+    error("invalid value, must be between 0 and 360");
+  }
+}
+
+void wrapperSet_DELTA() {
+  char *arg;
+  
+  arg = sCmd.next();
+  if (arg == NULL) {
+    error("No value stated");
+    return;
+  }
+  int delta = atoi(arg);
+  if ((delta >= 1 && delta <= 45) || (delta >= -45 && delta <= -1)) {
+    set_DELTA(delta);
+    ok();
+  } else {
+    error("invalid value, must be between 1 and 45 (positive or negative)");
+  }
+}
+
+void wrapperSet_TIMESTEP() {
+  char *arg;
+  
+  arg = sCmd.next();
+  if (arg == NULL) {
+    error("No value stated");
+    return;
+  }
+  int timestep = atoi(arg);
+  if (timestep >= 10 && timestep <= 100) {
+    set_TIMESTEP(timestep);
+    ok();
+  } else {
+    error("invalid value, must be between 10 and 100");
+  }
+}
+
+void wrapperSet_NSTEPS() {
+  char *arg;
+  
+  arg = sCmd.next();
+  if (arg == NULL) {
+    error("No step value stated");
+    return;
+  }
+  int steps = atoi(arg);
+  if (steps >= 0 && steps <= 1000) {
+
+  } else {
+    error("invalid step value, must be between 1 and 1000, or 0 to disable bidirectional scanning.");
+  }
+  set_NSTEPS(steps);
+  ok();
+}
+
+void wrapperSet_TMODE() {
+  char *arg;
+  
+  arg = sCmd.next();
+  if (arg == NULL) {
+    error("No transducer value stated");
+    return;
+  }
+  int transducer = atoi(arg);
+  if (transducer >= 1 && transducer <= 2) {
+
+  } else {
+    error("invalid tranducer value, must be between 1 and 2");
+  }
+  arg = sCmd.next();
+  if (arg == NULL) {
+    error("No phase value stated");
+    return;
+  }
+  int mode = atoi(arg);
+  if ((mode >= 0) && (mode <= 2)) {
+
+  } else {
+    error("invalid mode value, must be 0 (disabled), 1 (input mode), 2 (output mode)");
+  }
+  set_TMODE(transducer, mode);
+  ok();
+}
+
+void wrapperCall_PAUSE() {
+  int err = call_PAUSE();
+  if (err == 0) {
+    ok();
+  } else {
+    error_i(err);
+  }
+};
+
+void wrapperCall_ACQUIRE() {
+  char *arg;
+  
+  arg = sCmd.next();
+  if (arg == NULL) {
+    error("No value stated");
+    return;
+  }
+  uint32_t frequency = atol(arg);
+  if (frequency > 0) {
+
+  } else {
+    error("invalid value, must be larger than 0");
+  }
+
+  int err = call_ACQUIRE(frequency);
+  if (err == 0) {
+    ok();
+  } else {
+    error_i(err);
+  }
+};
+
+void wrapperCall_GETDATA() {
+  int err = call_GETDATA();
+  if (err == 0) {
+    ok();
+  } else {
+    error_i(err);
+  }
+};
+
+*/
