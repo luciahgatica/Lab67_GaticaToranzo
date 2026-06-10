@@ -17,7 +17,6 @@ void SensorIR::runtime() {}
 
 int SensorIR::querySignal()
 {
-    // Serial.println(analogRead(m_sensor_pin));
     return analogRead(m_sensor_pin);
 }
 

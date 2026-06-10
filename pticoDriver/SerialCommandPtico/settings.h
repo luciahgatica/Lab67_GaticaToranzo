@@ -1,6 +1,5 @@
 // Arduino Uno configuration
 
-
 const uint8_t CFG_TRANSDUCER_PHASE_TRIGGER_PIN = 11;
 const uint8_t CFG_TRANSDUCER_PHASE_CHANGING_PIN = 13;
 

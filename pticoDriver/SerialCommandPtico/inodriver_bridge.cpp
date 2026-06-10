@@ -116,11 +116,11 @@ void bridge_setup() {
   // Setter:
   //    INTENSITY <I>
   // Returns: OK or ERROR
-  sCmd.addCommand("INTENSITY1", wrapperSetLedIntensity2);
+  sCmd.addCommand("INTENSITY2", wrapperSetLedIntensity2);
 
   // Call:
   // Returns: OK or ERROR
-  sCmd.addCommand("TURNOFFLED1", wrapperCallLedTurnOff2);
+  sCmd.addCommand("TURNOFFLED2", wrapperCallLedTurnOff2);
 
   ////// Sensor
 

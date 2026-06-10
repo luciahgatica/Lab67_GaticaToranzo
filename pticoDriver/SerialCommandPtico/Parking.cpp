@@ -30,7 +30,6 @@ bool Parking::Execute() {
 
             if (lecture > 500){
                   m_motor.setCurrentPositionAsZero();
-                  //Serial.print("Encontrado");
                   return true;
                   }
       }
@@ -44,7 +43,6 @@ bool Parking::Execute() {
 
                   if (lecture > 500){
                         m_motor.setCurrentPositionAsZero();
-                        // Serial.print("Encontrado");
                         return true;
                         }
             }

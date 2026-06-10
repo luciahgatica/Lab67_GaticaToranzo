@@ -17,7 +17,6 @@
 
 #define BAUD_RATE 9600
 
-
 void setup() {
   Serial.begin(BAUD_RATE);
   bridge_setup();

@@ -81,11 +81,6 @@ void user_setup() {
   ledcontroller2.init();
   sensor.init();
   parking.Execute();
-  // dephased_pwm.init();
-  // simple_ai.init();
-  // tranducer1.init();
-  // tranducer2.init();
-  
 };
 
 void user_loop() {
@@ -93,10 +88,6 @@ void user_loop() {
   ledcontroller1.runtime();
   ledcontroller2.runtime();
   sensor.runtime();
-  // dephased_pwm.runtime();
-  // simple_ai.runtime();
-  // tranducer1.runtime();
-  // tranducer2.runtime();
 };
 
 int call_INITIALIZE() {
@@ -158,67 +149,3 @@ int16_t QuerySignal() {
 }
 
 
-/*
-int16_t set_FREQUENCY(uint32_t frequency) {
-  dephased_pwm.setFrequency(frequency);
-  return 0;
-}
-
-int16_t set_MODE(PhaseControlMode mode) {
-  dephased_pwm.setMode(mode);
-  return 0;
-}
-
-int16_t set_PHASE(uint16_t phase) {
-  dephased_pwm.setPhase(phase);
-  return 0;
-}
-
-int16_t set_DELTA(int16_t delta) {
-  dephased_pwm.setDelta(delta);
-  return 0;
-}
-
-
-int16_t set_TIMESTEP(int16_t timestep) {
-  dephased_pwm.setTimeStep(timestep);
-  return 0;
-}
-
-int16_t set_NSTEPS(int16_t steps) {
-  dephased_pwm.setStepsBidir(steps);
-  return 0;
-}
-
-int16_t set_TMODE(int16_t transducer, int16_t mode) {
-  AIOMode new_mode;
-  if (mode == 0) {
-    new_mode = disabled;
-  } else if (mode == 1) {
-    new_mode = input;
-  } else if (mode == 2) {
-    new_mode = output;
-  }
-  if (transducer == 1) {
-    tranducer1.setMode(new_mode);
-  } else if (transducer == 2) {
-    tranducer2.setMode(new_mode);
-  }
-  return 0;
-}
-
-int16_t call_PAUSE() {
-  dephased_pwm.pause();
-  return 0;
-}
-
-int16_t call_ACQUIRE(uint32_t frequency) {
-  simple_ai.acquire(frequency);
-  return 0;
-}
-
-int16_t call_GETDATA() {
-  simple_ai.BufferToSerial();
-  return 0;
-}
-*/

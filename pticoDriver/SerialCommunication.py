@@ -1,8 +1,14 @@
+# Copiamos funciones que ya tenían definidas Ale y Tomi para su labo 6-7
+
 from abc import ABC, abstractmethod
 from serial import Serial
 import time
 
 BAUDRATE = 9600 
+
+#############################
+# Motor
+#############################
 
 class Motor(ABC):
     microsteps: int = 1
@@ -14,19 +20,84 @@ class Motor(ABC):
         pass
 
     @abstractmethod
-    def rotate(self, degrees: float):
+    def clean_serial(self):
         pass
 
     @abstractmethod
-    def set_rpm(self, velocity: float):
+    def rotate(self, steps: int):
         pass
 
-class MotorEsferico(Motor):
+    @abstractmethod
+    def set_rpm(self, velocity: float, acceleration : float):
+        pass
+
+    @abstractmethod
+    def get_motor_angle(self):
+        pass
+
+    @abstractmethod
+    def set_origin(self):
+        pass
+
+#############################
+# LEDs
+#############################
+    
+class Illumination(ABC):
+    @abstractmethod
     def __init__(self, port: str):
+        pass
+
+    @abstractmethod
+    def turn_on_led_i(self, LED: int, STEP: int):
+        pass
+
+    @abstractmethod
+    def intensity_led_i(self, LED: int, STEP: int, intensity: int, time: int = 0):
+        pass
+ 
+    @abstractmethod
+    def turn_off_led_i(self, LED : int):
+       pass
+
+    @abstractmethod
+    def turn_off_leds(self):
+        pass
+    
+#############################
+# IR sensor
+#############################
+    
+class Detection(ABC):
+    @abstractmethod
+    def __init__(self, port: str):
+        pass
+
+    @abstractmethod
+    def signal_read():
+        pass
+
+    
+#############################
+# Protocols
+#############################
+
+class Drivers(Motor, Illumination):
+    def __init__(self, port: str): # Agregamos los pines de LEDs??
         super().__init__(port)
         self._port = port
         self._baudrate = BAUDRATE
         self._serial = self._open_serial()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        self.turn_off_leds()
+        self.close()
+
+    def __del__(self):
+        self.turn_off_leds()
 
     def _open_serial(self) -> Serial:
         """ Opens a serial port between Arduino and Python """
@@ -42,38 +113,80 @@ class MotorEsferico(Motor):
                 pass
             if time.time() - start_time > 15:
                 raise TimeoutError("Arduino is not responding")
-        return serial
+        return serial # Hace el protocolo de parking como está definido en SerialCommandPtico.ino antes de devolver el control
     
-    def set_rpm(self, RPM):
-        pass
+    def close(self):
+        self._serial.close()
 
-    def rotate(self, degrees):
-        self._serial.write(f"STEP {degrees}\n".encode("ascii"))
+    # Motor specific functions
+
+    def rotate(self, steps):
+        self._serial.write(f"STEP {steps}\n".encode("ascii"))
         response = self._serial.readline().decode("ascii")
         return response
     
-    def clean_serial(self):
+    def clean_serial(self): # Verificar si funciona
         while self._serial.in_waiting:
             self._serial.readline().decode('ascii')
 
-    def get_phi(self):
+    def get_motor_angle(self):
         self.clean_serial()
         self._serial.write("POS?\n".encode('ascii'))
         response = self._serial.readline().decode('ascii')
         return response
+    
+    def set_origin(self):
+        self.serial.write("ZERO".encode("ascii"))
+        response = self._serial.readline().decode("ascii")
+        return response
+    
+    def set_rpm(self, velocity, acceleration):
+        pass
+    
+    # LED controller specific functions
+    
+    def turn_on_led_i(self, i):
+        self.serial.write(f"INTENSITY{i} 254".encode("ascii"))
+        response = self._serial.readline().decode("ascii")
+        return response
+    
+    def intensity_led_i(self, led_index, intensity):
+        self.serial.write(f"INTENSITY{led_index} {intensity}".encode("ascii"))
+        response = self._serial.readline().decode("ascii")
+        return response
+    
+    def turn_off_led_i(self, led_index):
+        self.serial.write(f"TURNOFFLED{led_index}".encode("ascii"))
+        response = self._serial.readline().decode("ascii")
+        return response
+    
+    def turn_off_leds(self, total_leds):
+        for led_index in range(total_leds):
+            self.turn_off_led_i(led_index)
+    
+    # IR sensor specific functions
 
+    def signal_read(self):
+        self.serial.write("SENSOR?".encode("ascii"))
+        response = self._serial.readline().decode("ascii")
+        return response
+        
+#############################
+# Pruebas
+#############################
 
-
-if __name__ == "__main__":
-    motor = MotorEsferico("COM9")
-    for i in range(10):
-        response = motor.rotate(180)
-        #print(response)
-        print("POS: ", motor.get_phi())
-        time.sleep(1)
-        response = motor.rotate(10)
-        time.sleep(1)
-        print("POS: ", motor.get_phi())
+# =============================================================================
+# if __name__ == "__main__":
+#     motor = MotorEsferico("COM9")
+#     for i in range(10):
+#         response = motor.rotate(180)
+#         #print(response)
+#         print("POS: ", motor.get_phi())
+#         time.sleep(1)
+#         response = motor.rotate(10)
+#         time.sleep(1)
+#         print("POS: ", motor.get_phi())
+# =============================================================================
 
 #    while True:
 #        response = motor.rotate(360)
