@@ -61,7 +61,7 @@ class Illumination(ABC):
        pass
 
     @abstractmethod
-    def turn_off_leds(self):
+    def turn_off_leds(self, LEDs : int):
         pass
     
 #############################
@@ -82,7 +82,7 @@ class Detection(ABC):
 # Protocols
 #############################
 
-class Drivers(Motor, Illumination):
+class Drivers(Motor, Illumination, Detection):
     def __init__(self, port: str): # Agregamos los pines de LEDs??
         super().__init__(port)
         self._port = port
@@ -93,11 +93,11 @@ class Drivers(Motor, Illumination):
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
-        self.turn_off_leds()
+        self.turn_off_leds(1)
         self.close()
 
     def __del__(self):
-        self.turn_off_leds()
+        self.turn_off_leds(1)
 
     def _open_serial(self) -> Serial:
         """ Opens a serial port between Arduino and Python """
@@ -136,7 +136,7 @@ class Drivers(Motor, Illumination):
         return response
     
     def set_origin(self):
-        self.serial.write("ZERO".encode("ascii"))
+        self._serial.write("ZERO".encode("ascii"))
         response = self._serial.readline().decode("ascii")
         return response
     
@@ -146,17 +146,17 @@ class Drivers(Motor, Illumination):
     # LED controller specific functions
     
     def turn_on_led_i(self, i):
-        self.serial.write(f"INTENSITY{i} 254".encode("ascii"))
+        self._serial.write(f"INTENSITY{i} 254".encode("ascii"))
         response = self._serial.readline().decode("ascii")
         return response
     
     def intensity_led_i(self, led_index, intensity):
-        self.serial.write(f"INTENSITY{led_index} {intensity}".encode("ascii"))
+        self._serial.write(f"INTENSITY{led_index} {intensity}".encode("ascii"))
         response = self._serial.readline().decode("ascii")
         return response
     
     def turn_off_led_i(self, led_index):
-        self.serial.write(f"TURNOFFLED{led_index}".encode("ascii"))
+        self._serial.write(f"TURNOFFLED{led_index}".encode("ascii"))
         response = self._serial.readline().decode("ascii")
         return response
     
@@ -167,13 +167,29 @@ class Drivers(Motor, Illumination):
     # IR sensor specific functions
 
     def signal_read(self):
-        self.serial.write("SENSOR?".encode("ascii"))
+        self._serial.write("SENSOR?".encode("ascii"))
         response = self._serial.readline().decode("ascii")
         return response
         
 #############################
 # Pruebas
 #############################
+
+if __name__ == "__main__":
+    system = Drivers("COM4")
+    response = system.rotate(100)
+    print("POS: ", system.get_motor_angle())
+    response = system.intensity_led_i(1, 10)
+    time.sleep(5)
+    print(10)
+    response = system.turn_off_led_i(1)
+    time.sleep(5)
+    print(0)
+    response = system.intensity_led_i(1, 100)
+    time.sleep(5)
+    print(100)
+    print("Sensor detects : ", system.signal_read())
+    
 
 # =============================================================================
 # if __name__ == "__main__":
