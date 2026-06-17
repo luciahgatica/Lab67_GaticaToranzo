@@ -36,13 +36,13 @@ int call_FINALIZE();
 // Motor functions
 int16_t Set_STEP(long step);
 int16_t Set_ZERO();
-int16_t QueryPosition();
+long QueryPosition();
 // Led Controler functions
 int16_t Set_INTENSITY1(int intensity);
 int16_t Call_TURNOFF1();
 int16_t Set_INTENSITY2(int intensity);
 int16_t Call_TURNOFF2();
 // Sensor functions
-int16_t QuerySignal();
+float QuerySignal();
 
 #endif // inodriver_user_

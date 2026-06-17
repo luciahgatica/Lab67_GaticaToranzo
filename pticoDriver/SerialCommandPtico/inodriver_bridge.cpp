@@ -172,6 +172,22 @@ void wrapperSet_STEP() {
   char *arg;
 
   arg = sCmd.next();
+
+  Serial.print("STEP recibido: ");
+  Serial.println(arg);
+
+  uint32_t step = atol(arg);
+
+  Set_STEP(step);
+
+  ok();
+}
+
+/*
+void wrapperSet_STEP() {
+  char *arg;
+
+  arg = sCmd.next();
   if (arg == NULL) {
     error("No value stated");
     return;
@@ -180,6 +196,7 @@ void wrapperSet_STEP() {
   Set_STEP(step);
   ok();
 };
+*/
 
 void wrapperSet_ZERO() {
   int err = Set_ZERO();
@@ -191,12 +208,19 @@ void wrapperSet_ZERO() {
 };
 
 void wrapperQueryPosition(){
-  int err = QueryPosition();
-  if (err == 0) {} 
-  else {
-    error_i(err);
-  }
-}
+  Serial.println(QueryPosition());
+};
+
+// void wrapperQueryPosition(){
+//   int err = QueryPosition();
+//   if (err == 0) {
+//     ok();
+//     return; 
+//   } 
+//   else {
+//     error_i(err);
+//   }
+// }
 
 // Led Controler
 
@@ -254,10 +278,15 @@ void wrapperCallLedTurnOff2() {
 
 // Sensor IR
 
+
 void wrapperQuerySignal(){
-  int err = QuerySignal();
-  if (err == 0) {} 
-  else {
-    error_i(err);
-  }
+  Serial.println(QuerySignal());
 }
+
+// void wrapperQuerySignal(){
+//   int err = QuerySignal();
+//   if (err == 0) {} 
+//   else {
+//     error_i(err);
+//   }
+// }

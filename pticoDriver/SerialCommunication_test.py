@@ -1,10 +1,19 @@
-# Copiamos funciones que ya tenían definidas Ale y Tomi para su labo 6-7
-
-from abc import ABC, abstractmethod
-from serial import Serial
 import time
+import random
+from serial import Serial
+from typing import List, Dict, Literal
+from abc import ABC, abstractmethod
 
-BAUDRATE = 9600 
+import serial.tools.list_ports
+
+puertos = serial.tools.list_ports.comports()
+for puerto in puertos:
+    print(puerto.device, puerto.description)
+
+t_inicio = time.time()
+
+
+BAUDRATE = 115200 
 
 #############################
 # Motor
@@ -179,7 +188,7 @@ class Drivers(Motor, Illumination, Detection):
 delay = 0.0005
 
 if __name__ == "__main__":
-    system = Drivers("COM4")
+    system = Drivers(port="/dev/ttyACM0")
     time.sleep(delay)
     response = system.get_motor_angle()
     print(f"POS: {response}")
@@ -207,17 +216,10 @@ if __name__ == "__main__":
 #        print(response)
 
 
-#%%
+t_fin = time.time()
+duracion = t_fin - t_inicio
+minutos = duracion // 60
+segundos = duracion % 60
+print(f"⏱️ Proceso completado en {int(minutos)} min {int(segundos)} s")
 
-def rotate(self, steps):
-    self._serial.write(f"STEP {steps}\n".encode("ascii"))
-
-    time.sleep(0.5)
-
-    while self._serial.in_waiting:
-        print(
-            "SERIAL:",
-            repr(self._serial.readline().decode("ascii"))
-        )
-        
-system.rotate(100)
+print("Proceso completado, todas las imágenes guardadas.")

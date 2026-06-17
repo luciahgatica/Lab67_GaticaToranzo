@@ -114,9 +114,8 @@ int16_t Set_ZERO() {
   return 0;
 }
 
-int16_t QueryPosition() {
-  motor.queryPosition();
-  return 0;
+long QueryPosition() {
+  return motor.queryPosition();
 }
 
 // Funciones del controlador LED
@@ -143,9 +142,8 @@ int16_t Call_TURNOFF2() {
 
 // Funciones del sensor IR
 
-int16_t QuerySignal() {
-  sensor.querySignal();
-  return 0;
+float QuerySignal() {
+  return sensor.querySignal();
 }
 
 

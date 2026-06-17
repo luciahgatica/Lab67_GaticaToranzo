@@ -68,7 +68,6 @@ void Motor::moveToZero()
 
 long Motor::queryPosition()
 {
-  // Serial.println(m_stepper.currentPosition());
   return m_stepper.currentPosition();
 }
 
