@@ -14,48 +14,13 @@
 // 18-05. Added comments. 
 // 27-05. Added functions for  Fourier ptycography, mainly motor controller.
 // 29-05. Added functions for Fourier ptycography microscope, mainly now for some LED Controllers with PWM.
-/// 08-06. Created a copy for future reference and deleted unnecessary lines.
+// 08-06. Created a copy for future reference and deleted unnecessary lines.
+// 19-06. Removed comments & removed parking.execute() from user_setup(), since it produces bugs while controlling from Python.
 
 #include "inodriver_user.h"
 
-
-// setting.h is include since the last project have several constants
-// for setting-up the hardware.
-
 #include "settings.h"
 
-/*
-DephasedPWM dephased_pwm(
-  CFG_TRANSDUCER_1_OUTPUT_PIN, 
-  CFG_TRANSDUCER_2_OUTPUT_PIN, 
-  CFG_TRANSDUCER_INVERT_HELPER_PIN, 
-  CFG_TRANSDUCER_2_DEPHASE_EXT_PIN, 
-  CFG_TRANSDUCER_2_DEPHASE_PAUSE_PIN,
-  CFG_TRANSDUCER_PHASE_TRIGGER_PIN,
-  CFG_TRANSDUCER_PHASE_CHANGING_PIN
-);
-
-SimpleAnalogInput simple_ai(
-  CFG_TRANSDUCER_1_INPUT_PIN, 
-  CFG_TRANSDUCER_2_INPUT_PIN
-);
-
-AIOSwitch tranducer1(
-  CFG_TRANSDUCER_1_INPUT_RELAY_PIN, 
-  CFG_TRANSDUCER_1_INPUT_RELAY_CONN_STATE, 
-  CFG_TRANSDUCER_1_OUTPUT_RELAY_PIN, 
-  CFG_TRANSDUCER_1_OUTPUT_RELAY_CONN_STATE, 
-  CFG_TRANSDUCER_MODE_DELAY
-);
-
-AIOSwitch tranducer2(
-  CFG_TRANSDUCER_2_INPUT_RELAY_PIN, 
-  CFG_TRANSDUCER_2_INPUT_RELAY_CONN_STATE, 
-  CFG_TRANSDUCER_2_OUTPUT_RELAY_PIN, 
-  CFG_TRANSDUCER_2_OUTPUT_RELAY_CONN_STATE, 
-  CFG_TRANSDUCER_MODE_DELAY
-);
-*/
 
 const uint8_t pinDir = 48;
 const uint8_t pinStep = 50;
@@ -80,7 +45,7 @@ void user_setup() {
   ledcontroller1.init();
   ledcontroller2.init();
   sensor.init();
-  parking.Execute();
+  // parking.Execute();
 };
 
 void user_loop() {
@@ -146,4 +111,14 @@ float QuerySignal() {
   return sensor.querySignal();
 }
 
+// Funciones del Parking
+
+int16_t Call_PARK() {
+  bool resultado = parking.Execute();
+
+  if(resultado)
+    return 1;
+  else
+    return 0;
+}
 

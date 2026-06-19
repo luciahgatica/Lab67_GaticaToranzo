@@ -13,10 +13,7 @@
 
 /// 18-05. Added comments. 
 /// 08-06. Created a copy for future reference and deleted unnecessary lines.
-
-/////////////////////////////////////////////////////////////
-// The main purpose of the bridge is to translate serial communication in ASCII 
-// to functions in the Arduino's firmware.
+/// 19-06. Removed unnecesary comments. Added parking call function and wrapper.
 
 #include "inodriver_bridge.h"
 
@@ -35,11 +32,6 @@ void error_i(int errno) {
   Serial.print("ERROR: ");
   Serial.println(errno);
 }
-
-
-/// .available checks if there's space in the buffer.
-/// if > 0 then we have bytes waiting for it to be read
-// so .readSerial then reads the bytes.
 
 void bridge_loop() {
   while (Serial.available() > 0) {
@@ -62,17 +54,6 @@ void bridge_setup() {
 
   sCmd.setDefaultHandler(unrecognized); 
 
-  // initialize
-
-  // Thanks to sCmd.addCommand('TEXT', wrapperFUNCTION)
-  // there's a connection between the function INITIALIZE
-  // and the text (in ASCII) INITIALIZE.
-  // This is the general idea of the addCommand method.
-
-  // A wrapper is a intermediate-function that adapts the interface
-  // between one function and another. In this case, it would be
-  // between the addCommand function and the Call_INITIALIZE function.
-
   // Call:
   //   INITIALIZE
   // Returns: OK or ERROR  
@@ -84,7 +65,7 @@ void bridge_setup() {
   sCmd.addCommand("FINALIZE", wrapperCall_FINALIZE); 
 
   /////////////////////
-  //// Ptico
+  //// Ptycography
   /////////////////////
    
   ////// Motor
@@ -127,9 +108,15 @@ void bridge_setup() {
   // Query:
   // Returns: Value or ERROR
   sCmd.addCommand("SENSOR?", wrapperQuerySignal);
+
+  ////// Parking
+  
+  //Call:
+  // Returns: OK or ERROR
+  sCmd.addCommand("PARK", wrapperCall_PARK);
 }
 
-//// Code 
+//////// Code 
 
 void getInfo() {
   Serial.print("DephasedPWM,");
@@ -163,10 +150,11 @@ void wrapperCall_FINALIZE() {
 };
 
 ////////////////////////////////
-// Pticografia
+// Ptycography
 ///////////////////////////////
 
-// Motor
+/////// Motor
+
 
 void wrapperSet_STEP() {
   char *arg;
@@ -183,21 +171,6 @@ void wrapperSet_STEP() {
   ok();
 }
 
-/*
-void wrapperSet_STEP() {
-  char *arg;
-
-  arg = sCmd.next();
-  if (arg == NULL) {
-    error("No value stated");
-    return;
-  }
-  uint32_t step = atol(arg);
-  Set_STEP(step);
-  ok();
-};
-*/
-
 void wrapperSet_ZERO() {
   int err = Set_ZERO();
   if (err == 0) {
@@ -211,18 +184,7 @@ void wrapperQueryPosition(){
   Serial.println(QueryPosition());
 };
 
-// void wrapperQueryPosition(){
-//   int err = QueryPosition();
-//   if (err == 0) {
-//     ok();
-//     return; 
-//   } 
-//   else {
-//     error_i(err);
-//   }
-// }
-
-// Led Controler
+////// Led Controler
 
 void wrapperSetLedIntensity1() {
   char *arg;
@@ -283,10 +245,14 @@ void wrapperQuerySignal(){
   Serial.println(QuerySignal());
 }
 
-// void wrapperQuerySignal(){
-//   int err = QuerySignal();
-//   if (err == 0) {} 
-//   else {
-//     error_i(err);
-//   }
-// }
+
+void wrapperCall_PARK() {
+
+  int err = Call_PARK();
+
+  if (err == 0) {
+    ok();
+  } else {
+    error_i(err);
+  }
+}
