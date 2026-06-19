@@ -45,6 +45,6 @@ int16_t Call_TURNOFF2();
 // Sensor functions
 float QuerySignal();
 // Parking functions
-init16_t Call_PARK();
+int16_t Call_PARK();
 
 #endif // inodriver_user_

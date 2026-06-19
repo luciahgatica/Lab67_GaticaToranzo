@@ -44,7 +44,7 @@ void wrapperCallLedTurnOff2();
 // Sensor functions
 void wrapperQuerySignal();
 // Parking functions
-void wrapperCALL_PARK();
+void wrapperCall_PARK();
 
 
 #endif // inodriver_bridge_h

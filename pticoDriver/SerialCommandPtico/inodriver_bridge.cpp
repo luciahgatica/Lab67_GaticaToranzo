@@ -16,11 +16,16 @@
 /// 19-06. Removed unnecesary comments. Added parking call function and wrapper.
 
 #include "inodriver_bridge.h"
+extern Parking parking;
 
 SerialCommand sCmd;
 
 void ok() {
   Serial.println("OK");
+}
+
+void ok_park() {
+  Serial.println("PARK_OK");
 }
 
 void error(const char* msg) {
@@ -247,12 +252,11 @@ void wrapperQuerySignal(){
 
 
 void wrapperCall_PARK() {
+  bool result = parking.Execute();
 
-  int err = Call_PARK();
-
-  if (err == 0) {
-    ok();
+  if (result) {
+    Serial.println("PARK_OK");
   } else {
-    error_i(err);
+    Serial.println("PARK_FAIL");
   }
 }

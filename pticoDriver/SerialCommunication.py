@@ -127,8 +127,16 @@ class Drivers(Motor, Illumination, Detection):
         return response
     
     def park(self):
-        self._serial.write("PARK\n".encode("ascii"))
-        return self._serial.readline().decode("ascii")
+        self.clean_serial()
+        self._serial.write(b"PARK\n")
+
+        while True:
+            msg = self._serial.readline().decode("ascii").strip()
+
+            if msg == "PARK_OK":
+                return True
+            if msg == "PARK_FAIL":
+                raise RuntimeError("Parking failed")
     
     def clean_serial(self): # Verificar si funciona
         while self._serial.in_waiting:
@@ -181,15 +189,15 @@ class Drivers(Motor, Illumination, Detection):
 # Pruebas
 #############################
 
-delay = 0.0005
+#delay = 0.0005
 
-if __name__ == "__main__":
-    system = Drivers("COM4")
-    time.sleep(delay)
-    response = system.get_motor_angle()
-    print(f"POS: {response}")
-    time.sleep(delay)
-    print("Sensor detects : ", system.signal_read())
+#if __name__ == "__main__":
+#    system = Drivers("/dev/ttyUSB0")
+#   time.sleep(delay)
+#    response = system.get_motor_angle()
+#    print(f"POS: {response}")
+#    time.sleep(delay)
+#    print("Sensor detects : ", system.signal_read())
     
 
 # =============================================================================
@@ -211,18 +219,3 @@ if __name__ == "__main__":
 #        time.sleep(1)
 #        print(response)
 
-
-#%%
-
-def rotate(self, steps):
-    self._serial.write(f"STEP {steps}\n".encode("ascii"))
-
-    time.sleep(0.5)
-
-    while self._serial.in_waiting:
-        print(
-            "SERIAL:",
-            repr(self._serial.readline().decode("ascii"))
-        )
-        
-system.rotate(100)
