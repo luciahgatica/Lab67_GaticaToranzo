@@ -1,4 +1,5 @@
 # Copiamos funciones que ya tenían definidas Ale y Tomi para su labo 6-7
+## 26-06-19. Added parking functions. 
 
 from abc import ABC, abstractmethod
 from serial import Serial
@@ -124,6 +125,10 @@ class Drivers(Motor, Illumination, Detection):
         self._serial.write(f"STEP {steps}\n".encode("ascii"))
         response = self._serial.readline().decode("ascii")
         return response
+    
+    def park(self):
+        self._serial.write("PARK\n".encode("ascii"))
+        return self._serial.readline().decode("ascii")
     
     def clean_serial(self): # Verificar si funciona
         while self._serial.in_waiting:
