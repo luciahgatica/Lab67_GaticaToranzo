@@ -6,8 +6,6 @@
 SensorIR::SensorIR(uint8_t sensor_pin):
   m_sensor_pin(sensor_pin) {}
 
-/// ¿Es necesario sacar la redundante del init o del constructor?
-
 void SensorIR::init()
 {
   Serial.begin(9600);

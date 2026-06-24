@@ -24,8 +24,6 @@ Motor::Motor(uint8_t step_pin,
     m_stepper.setAcceleration(m_acceleration);
 }
 
-/// ¿Es necesario sacar la redundante del init o del constructor?
-
 void Motor::init()
 {
   pinMode(m_dir_pin, OUTPUT);
