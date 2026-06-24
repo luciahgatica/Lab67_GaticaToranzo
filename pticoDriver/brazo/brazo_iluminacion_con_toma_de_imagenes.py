@@ -1,4 +1,7 @@
+# %%
 import time
+import numpy as np
+from microscope_config import led_positions
 import pathlib
 from driver_imperx import ky, ImperxCamera, guardar_imagenes, guardar_imagenes_parciales
 from serial import Serial
@@ -8,11 +11,11 @@ from time import sleep
 
 t_inicio = time.time()
 # ========== CONFIGURACIÓN ==========
-ROOT = '/home/chanoscopio/Documents/AleYLu/imagenes_tomadas/2026-06-05-b' #'[LucasC/code/ptyco-full-simulator/test/imagenes_tomadas/2025-09-30'
+ROOT = '/home/chanoscopio/Documents/AleYLu/imagenes_tomadas/2026-06-17-brazo' #'[LucasC/code/ptyco-full-simulator/test/imagenes_tomadas/2025-09-30'
 
 GANANCIA = 1.0
 N_IMAGENES = 2
-PUERTO_ARDUINO = "/dev/ttyACM0"
+PUERTO_ARDUINO = "/dev/ttyUSB0"
 
 # Inicialización cámara
 project = pathlib.Path('/home/chanoscopio/Documents/LucasC/Prueba3.fgprj')
@@ -21,6 +24,10 @@ handle = ky.KYFG_Init()
 imperx = ImperxCamera(roi=roi_nuestro, n_frames=N_IMAGENES, project_file=project)
 imperx.pixel_format = "Mono12"
 imperx.gain = GANANCIA
+
+
+while not imperx.queue.empty():
+    imperx.queue.get()
 
 # Inicialización LEDs
 driver = Drivers(port=PUERTO_ARDUINO)
@@ -106,9 +113,16 @@ limite_memoria = 500  # guarda cada 100 imágenes
 # Prueba brazo
 #############################
 
-LEDS_POR_TIEMPO = {
-     3000: [(1, 1)]
-}
+print('antes')
+driver.park()
+print('dsp')
+print('PARKING TERMINADO')
+
+driver.rotate(-100)
+driver.set_origin()
+
+indices = np.array(list(led_positions.keys())[:][:10])
+LEDS_POR_TIEMPO = {5000 : indices}
 
 EXPOSICIONES = list(LEDS_POR_TIEMPO.keys())
   # en microsegundos (100ms)
@@ -129,6 +143,7 @@ for tiempo in EXPOSICIONES:
             
         driver.turn_on_led_i(led)
         time.sleep(0.05)
+        imperx.queue.queue.clear()
 
         imagenes = imperx.obtener_imagenes(N_IMAGENES)
 
@@ -139,7 +154,7 @@ for tiempo in EXPOSICIONES:
                 guardar_imagenes_parciales(todas_las_imagenes, ROOT)
                 todas_las_imagenes.clear()
 
-        driver.turn_off_leds()
+        driver.turn_off_leds(led)
         paso_0 = paso_1
 
 # Guardar lo que quede al final (menos de 100)

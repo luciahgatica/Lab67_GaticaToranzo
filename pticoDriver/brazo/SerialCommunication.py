@@ -1,18 +1,11 @@
-import time
-import random
-from serial import Serial
-from typing import List, Dict, Literal
+# Copiamos funciones que ya tenían definidas Ale y Tomi para su labo 6-7
+## 26-06-19. Added parking functions. 
+
 from abc import ABC, abstractmethod
+from serial import Serial
+import time
 
-import serial.tools.list_ports
-
-puertos = serial.tools.list_ports.comports()
-for puerto in puertos:
-    print(puerto.device, puerto.description)
-
-t_inicio = time.time()
-
-BAUDRATE = 9600 # 115200 
+BAUDRATE = 9600 
 
 #############################
 # Motor
@@ -133,6 +126,18 @@ class Drivers(Motor, Illumination, Detection):
         response = self._serial.readline().decode("ascii")
         return response
     
+    def park(self):
+        self.clean_serial()
+        self._serial.write(b"PARK\n")
+
+        while True:
+            msg = self._serial.readline().decode("ascii").strip()
+
+            if msg == "PARK_OK":
+                return True
+            if msg == "PARK_FAIL":
+                raise RuntimeError("Parking failed")
+    
     def clean_serial(self): # Verificar si funciona
         while self._serial.in_waiting:
             self._serial.readline().decode('ascii')
@@ -184,22 +189,33 @@ class Drivers(Motor, Illumination, Detection):
 # Pruebas
 #############################
 
+#delay = 0.0005
 
-delay = 0.0005
-
-if __name__ == "__main__":
-    system = Drivers(port="COM4")#"/dev/ttyACM0")
-    time.sleep(delay)
-    response = system.get_motor_angle()
-    print(f"POS: {response}")
-    time.sleep(delay)
-    print("Sensor detects : ", system.signal_read())
+#if __name__ == "__main__":
+#    system = Drivers("/dev/ttyUSB0")
+#   time.sleep(delay)
+#    response = system.get_motor_angle()
+#    print(f"POS: {response}")
+#    time.sleep(delay)
+#    print("Sensor detects : ", system.signal_read())
     
 
-t_fin = time.time()
-duracion = t_fin - t_inicio
-minutos = duracion // 60
-segundos = duracion % 60
-print(f"⏱️ Proceso completado en {int(minutos)} min {int(segundos)} s")
+# =============================================================================
+# if __name__ == "__main__":
+#     motor = MotorEsferico("COM9")
+#     for i in range(10):
+#         response = motor.rotate(180)
+#         #print(response)
+#         print("POS: ", motor.get_phi())
+#         time.sleep(1)
+#         response = motor.rotate(10)
+#         time.sleep(1)
+#         print("POS: ", motor.get_phi())
+# =============================================================================
 
-print("Proceso completado, todas las imágenes guardadas.")
+#    while True:
+#        response = motor.rotate(360)
+#        print(motor._serial.readline().decode('ascii'))
+#        time.sleep(1)
+#        print(response)
+
