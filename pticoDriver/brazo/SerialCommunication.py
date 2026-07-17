@@ -189,15 +189,22 @@ class Drivers(Motor, Illumination, Detection):
 # Pruebas
 #############################
 
-#delay = 0.0005
-
-#if __name__ == "__main__":
-#    system = Drivers("/dev/ttyUSB0")
-#   time.sleep(delay)
-#    response = system.get_motor_angle()
-#    print(f"POS: {response}")
-#    time.sleep(delay)
-#    print("Sensor detects : ", system.signal_read())
+delay = 0.5
+if __name__ == "__main__":
+    system = Drivers("COM4")
+    time.sleep(delay)
+response = system.get_motor_angle()
+print(f"POS: {response}")
+time.sleep(delay)
+print("Sensor detects : ", system.signal_read())
+time.sleep(delay)
+system.intensity_led_i(1, 20)
+time.sleep(delay)
+system.intensity_led_i(1, 0)
+time.sleep(delay)
+system.intensity_led_i(2, 20)
+time.sleep(delay)
+system.turn_off_leds(6)
     
 
 # =============================================================================

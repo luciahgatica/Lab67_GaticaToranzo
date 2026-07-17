@@ -22,6 +22,7 @@
 const char COMPILE_DATE_TIME[] = __DATE__ " " __TIME__;
 
 void ok();
+void ok_park();
 void error(const char*);
 void error_i(int);
 void bridge_loop();
@@ -41,8 +42,18 @@ void wrapperSetLedIntensity1();
 void wrapperCallLedTurnOff1();
 void wrapperSetLedIntensity2();
 void wrapperCallLedTurnOff2();
+void wrapperSetLedIntensity3();
+void wrapperCallLedTurnOff3();
+void wrapperSetLedIntensity4();
+void wrapperCallLedTurnOff4();
+void wrapperSetLedIntensity5();
+void wrapperCallLedTurnOff5();
+void wrapperSetLedIntensity6();
+void wrapperCallLedTurnOff6();
 // Sensor functions
 void wrapperQuerySignal();
+// Parking functions
+void wrapperCall_PARK();
 
 
 #endif // inodriver_bridge_h

@@ -1,9 +1,9 @@
 # %%
 import time
 import numpy as np
-from microscope_config import led_positions
+from brazo_microscope_config import led_positions
 import pathlib
-from driver_imperx import ky, ImperxCamera, guardar_imagenes, guardar_imagenes_parciales
+#from driver_imperx import ky, ImperxCamera, guardar_imagenes, guardar_imagenes_parciales
 from serial import Serial
 #from illumination import IlluminationDriver
 from SerialCommunication import Drivers
@@ -11,24 +11,26 @@ from time import sleep
 
 t_inicio = time.time()
 # ========== CONFIGURACIÓN ==========
-ROOT = '/home/chanoscopio/Documents/AleYLu/imagenes_tomadas/2026-06-17-brazo' #'[LucasC/code/ptyco-full-simulator/test/imagenes_tomadas/2025-09-30'
+ROOT = 'C:Users\nahue\OneDrive\Documents\Arduino\pticoDriver\brazo' #'/home/chanoscopio/Documents/AleYLu/imagenes_tomadas/2026-06-17-brazo' #'[LucasC/code/ptyco-full-simulator/test/imagenes_tomadas/2025-09-30'
 
 GANANCIA = 1.0
 N_IMAGENES = 2
-PUERTO_ARDUINO = "/dev/ttyUSB0"
+PUERTO_ARDUINO = "COM4" # "/dev/ttyUSB0"
 
-# Inicialización cámara
-project = pathlib.Path('/home/chanoscopio/Documents/LucasC/Prueba3.fgprj')
-roi_nuestro = ((0,0), (6608, 6608))#((1564,2736), (5436, 6608))
-handle = ky.KYFG_Init()
-imperx = ImperxCamera(roi=roi_nuestro, n_frames=N_IMAGENES, project_file=project)
-imperx.pixel_format = "Mono12"
-imperx.gain = GANANCIA
-
-
-while not imperx.queue.empty():
-    imperx.queue.get()
-
+# =============================================================================
+# # Inicialización cámara
+# project = pathlib.Path('/home/chanoscopio/Documents/LucasC/Prueba3.fgprj')
+# roi_nuestro = ((0,0), (6608, 6608))#((1564,2736), (5436, 6608))
+# handle = ky.KYFG_Init()
+# imperx = ImperxCamera(roi=roi_nuestro, n_frames=N_IMAGENES, project_file=project)
+# imperx.pixel_format = "Mono12"
+# imperx.gain = GANANCIA
+# 
+# 
+# while not imperx.queue.empty():
+#     imperx.queue.get()
+# 
+# =============================================================================
 # Inicialización LEDs
 driver = Drivers(port=PUERTO_ARDUINO)
 
@@ -126,42 +128,46 @@ LEDS_POR_TIEMPO = {5000 : indices}
 
 EXPOSICIONES = list(LEDS_POR_TIEMPO.keys())
   # en microsegundos (100ms)
-imperx.exposure_time = EXPOSICIONES[0]
+#imperx.exposure_time = EXPOSICIONES[0]
 
 for tiempo in EXPOSICIONES:
 
-    imperx.set_gain_exposure(GANANCIA, int(round(tiempo, 1)))
+#    imperx.set_gain_exposure(GANANCIA, int(round(tiempo, 1)))
 
     lista_leds = LEDS_POR_TIEMPO.get(tiempo, [])
     paso_0 = driver.get_motor_angle()
     
-    for paso, led in lista_leds:
+    for led, paso in lista_leds:
         paso_1 = paso
         if paso_0 != paso_1:
             driver.rotate(paso)
-            time.sleep(0.005)
+            time.sleep(0.1)   
             
         driver.turn_on_led_i(led)
-        time.sleep(0.05)
-        imperx.queue.queue.clear()
-
-        imagenes = imperx.obtener_imagenes(N_IMAGENES)
-
-        for idx, img in enumerate(imagenes):
-            todas_las_imagenes.append((led, paso, tiempo, idx, img))
-
-            if len(todas_las_imagenes) >= limite_memoria:
-                guardar_imagenes_parciales(todas_las_imagenes, ROOT)
-                todas_las_imagenes.clear()
-
-        driver.turn_off_leds(led)
+        time.sleep(0.1)
+# =============================================================================
+#         imperx.queue.queue.clear()
+# 
+#         imagenes = imperx.obtener_imagenes(N_IMAGENES)
+# 
+#         for idx, img in enumerate(imagenes):
+#             todas_las_imagenes.append((led, paso, tiempo, idx, img))
+# 
+#             if len(todas_las_imagenes) >= limite_memoria:
+#                 guardar_imagenes_parciales(todas_las_imagenes, ROOT)
+#                 todas_las_imagenes.clear()
+#         
+# =============================================================================
+        driver.turn_off_leds(6)
         paso_0 = paso_1
 
 # Guardar lo que quede al final (menos de 100)
-if todas_las_imagenes:
-    guardar_imagenes_parciales(todas_las_imagenes, ROOT)
-    todas_las_imagenes.clear()
-
+# =============================================================================
+# if todas_las_imagenes:
+#     guardar_imagenes_parciales(todas_las_imagenes, ROOT)
+#     todas_las_imagenes.clear()
+# 
+# =============================================================================
 t_fin = time.time()
 duracion = t_fin - t_inicio
 minutos = duracion // 60

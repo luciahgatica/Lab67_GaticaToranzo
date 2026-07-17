@@ -19,11 +19,17 @@
 // to functions in the Arduino's firmware.
 
 #include "inodriver_bridge.h"
+extern Parking parking;
+
 
 SerialCommand sCmd;
 
 void ok() {
   Serial.println("OK");
+}
+
+void ok_park() {
+  Serial.println("PARK_OK");
 }
 
 void error(const char* msg) {
@@ -122,11 +128,53 @@ void bridge_setup() {
   // Returns: OK or ERROR
   sCmd.addCommand("TURNOFFLED2", wrapperCallLedTurnOff2);
 
+    // Setter:
+  //    INTENSITY <I>
+  // Returns: OK or ERROR
+  sCmd.addCommand("INTENSITY3", wrapperSetLedIntensity3);
+
+  // Call:
+  // Returns: OK or ERROR
+  sCmd.addCommand("TURNOFFLED3", wrapperCallLedTurnOff3);
+
+  // Setter:
+  //    INTENSITY <I>
+  // Returns: OK or ERROR
+  sCmd.addCommand("INTENSITY4", wrapperSetLedIntensity4);
+
+  // Call:
+  // Returns: OK or ERROR
+  sCmd.addCommand("TURNOFFLED4", wrapperCallLedTurnOff4);
+
+    // Setter:
+  //    INTENSITY <I>
+  // Returns: OK or ERROR
+  sCmd.addCommand("INTENSITY5", wrapperSetLedIntensity5);
+
+  // Call:
+  // Returns: OK or ERROR
+  sCmd.addCommand("TURNOFFLED5", wrapperCallLedTurnOff5);
+
+  // Setter:
+  //    INTENSITY <I>
+  // Returns: OK or ERROR
+  sCmd.addCommand("INTENSITY6", wrapperSetLedIntensity6);
+
+  // Call:
+  // Returns: OK or ERROR
+  sCmd.addCommand("TURNOFFLED6", wrapperCallLedTurnOff6);
+
   ////// Sensor
 
   // Query:
   // Returns: Value or ERROR
   sCmd.addCommand("SENSOR?", wrapperQuerySignal);
+
+  ////// Parking
+  
+  //Call:
+  // Returns: OK or ERROR
+  sCmd.addCommand("PARK", wrapperCall_PARK);
 }
 
 //// Code 
@@ -199,6 +247,7 @@ void wrapperQueryPosition(){
 // Led Controler
 
 void wrapperSetLedIntensity1() {
+  Serial.println("WRAPPER 1");
   char *arg;
   
   arg = sCmd.next();
@@ -207,7 +256,7 @@ void wrapperSetLedIntensity1() {
     return;
   }
   int intensity = atol(arg);
-  if (intensity > 0 && intensity < 255) {
+  if (intensity >= 0 && intensity < 255) {
     Set_INTENSITY1(intensity);
     ok();
   } else {
@@ -225,6 +274,7 @@ void wrapperCallLedTurnOff1() {
 }
 
 void wrapperSetLedIntensity2() {
+  Serial.println("WRAPPER 2");
   char *arg;
   
   arg = sCmd.next();
@@ -233,7 +283,7 @@ void wrapperSetLedIntensity2() {
     return;
   }
   int intensity = atol(arg);
-  if (intensity > 0 && intensity < 255) {
+  if (intensity >= 0 && intensity < 255) {
     Set_INTENSITY2(intensity);
     ok();
   } else {
@@ -250,10 +300,125 @@ void wrapperCallLedTurnOff2() {
   }
 }
 
-// Sensor IR
+void wrapperSetLedIntensity3() {
+  char *arg;
+  
+  arg = sCmd.next();
+  if (arg == NULL) {
+    error("No value stated");
+    return;
+  }
+  int intensity = atol(arg);
+  if (intensity >= 0 && intensity < 255) {
+    Set_INTENSITY3(intensity);
+    ok();
+  } else {
+    error("invalid value, must be larger than 0 and smaller than 255");
+  }
+}
 
+void wrapperCallLedTurnOff3() {
+  int err = Call_TURNOFF3();
+  if (err == 0) {
+    ok();
+  } else {
+    error_i(err);
+  }
+}
+
+void wrapperSetLedIntensity4() {
+  char *arg;
+  
+  arg = sCmd.next();
+  if (arg == NULL) {
+    error("No value stated");
+    return;
+  }
+  int intensity = atol(arg);
+  if (intensity >= 0 && intensity < 255) {
+    Set_INTENSITY4(intensity);
+    ok();
+  } else {
+    error("invalid value, must be larger than 0 and smaller than 255");
+  }
+}
+
+void wrapperCallLedTurnOff4() {
+  int err = Call_TURNOFF4();
+  if (err == 0) {
+    ok();
+  } else {
+    error_i(err);
+  }
+}
+
+void wrapperSetLedIntensity5() {
+  char *arg;
+  
+  arg = sCmd.next();
+  if (arg == NULL) {
+    error("No value stated");
+    return;
+  }
+  int intensity = atol(arg);
+  if (intensity >= 0 && intensity < 255) {
+    Set_INTENSITY5(intensity);
+    ok();
+  } else {
+    error("invalid value, must be larger than 0 and smaller than 255");
+  }
+}
+
+void wrapperCallLedTurnOff5() {
+  int err = Call_TURNOFF5();
+  if (err == 0) {
+    ok();
+  } else {
+    error_i(err);
+  }
+}
+
+void wrapperSetLedIntensity6() {
+  char *arg;
+  
+  arg = sCmd.next();
+  if (arg == NULL) {
+    error("No value stated");
+    return;
+  }
+  int intensity = atol(arg);
+  if (intensity >= 0 && intensity < 255) {
+    Set_INTENSITY6(intensity);
+    ok();
+  } else {
+    error("invalid value, must be larger than 0 and smaller than 255");
+  }
+}
+
+void wrapperCallLedTurnOff6() {
+  int err = Call_TURNOFF6();
+  if (err == 0) {
+    ok();
+  } else {
+    error_i(err);
+  }
+}
+
+// Sensor IR
 
 void wrapperQuerySignal(){
   Serial.println(QuerySignal());
+}
+
+// Parking
+
+void wrapperCall_PARK() {
+  bool result = parking.Execute();
+
+  if (result) {
+    Serial.println("PARK_OK");
+  } else {
+    Serial.println("PARK_FAIL");
+  }
 }
 

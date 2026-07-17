@@ -1,6 +1,6 @@
 import os 
-os.chdir(r'C:\Users\Lenovo\Desktop\Labo67\repo_git\pticoDriver')
-from common import *
+#os.chdir(r'C:\Users\Lenovo\Desktop\Labo67\repo_git\pticoDriver')
+from brazo_common import *
 import numpy as np
 
 matrix_center = (0,0,91e-3)
