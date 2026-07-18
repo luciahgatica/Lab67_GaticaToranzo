@@ -14,25 +14,34 @@
 // 18-05. Added comments. 
 // 27-05. Added functions for  Fourier ptycography, mainly motor controller.
 // 29-05. Added functions for Fourier ptycography microscope, mainly now for some LED Controllers with PWM.
-// 08-06. Created a copy for future reference and deleted unnecessary lines.
-// 19-06. Removed comments & removed parking.execute() from user_setup(), since it produces bugs while controlling from Python.
+/// 08-06. Created a copy for future reference and deleted unnecessary lines.
 
 #include "inodriver_user.h"
 
-#include "settings.h"
+// setting.h is include since the last project have several constants
+// for setting-up the hardware.
 
+#include "settings.h"
 
 const uint8_t pinDir = 48;
 const uint8_t pinStep = 50;
 const uint8_t maxSpeed = 300.0;
 const uint8_t acceleration = 100.0;
-const uint8_t pinLed1 = 8;
-const uint8_t pinLed2 = 9;
-const uint8_t pinSensor = A1;
+const uint8_t pinLed1 = 5;
+const uint8_t pinLed2 = 6;
+const uint8_t pinLed3 = 7;
+const uint8_t pinLed4 = 8;
+const uint8_t pinLed5 = 9;
+const uint8_t pinLed6 = 10;
+const uint8_t pinSensor = A0;
 
 Motor motor(pinStep, pinDir, maxSpeed, acceleration);
 LedController ledcontroller1(pinLed1);
 LedController ledcontroller2(pinLed2);
+LedController ledcontroller3(pinLed3);
+LedController ledcontroller4(pinLed4);
+LedController ledcontroller5(pinLed5);
+LedController ledcontroller6(pinLed6);
 SensorIR sensor(pinSensor);
 Parking parking(motor, sensor);
 
@@ -44,6 +53,10 @@ void user_setup() {
   motor.init();
   ledcontroller1.init();
   ledcontroller2.init();
+  ledcontroller3.init();
+  ledcontroller4.init();
+  ledcontroller5.init();
+  ledcontroller6.init();
   sensor.init();
   // parking.Execute();
 };
@@ -52,6 +65,10 @@ void user_loop() {
   motor.runtime();
   ledcontroller1.runtime();
   ledcontroller2.runtime();
+  ledcontroller3.runtime();
+  ledcontroller4.runtime();
+  ledcontroller5.runtime();
+  ledcontroller6.runtime();
   sensor.runtime();
 };
 
@@ -105,6 +122,46 @@ int16_t Call_TURNOFF2() {
   return 0;
 }
 
+int16_t Set_INTENSITY3(int intensity) {
+  ledcontroller3.LedIntensity(intensity);
+  return 0;
+}
+
+int16_t Call_TURNOFF3() {
+  ledcontroller3.LedTurnOff();
+  return 0;
+}
+
+int16_t Set_INTENSITY4(int intensity) {
+  ledcontroller4.LedIntensity(intensity);
+  return 0;
+}
+
+int16_t Call_TURNOFF4() {
+  ledcontroller4.LedTurnOff();
+  return 0;
+}
+
+int16_t Set_INTENSITY5(int intensity) {
+  ledcontroller5.LedIntensity(intensity);
+  return 0;
+}
+
+int16_t Call_TURNOFF5() {
+  ledcontroller5.LedTurnOff();
+  return 0;
+}
+
+int16_t Set_INTENSITY6(int intensity) {
+  ledcontroller6.LedIntensity(intensity);
+  return 0;
+}
+
+int16_t Call_TURNOFF6() {
+  ledcontroller6.LedTurnOff();
+  return 0;
+}
+
 // Funciones del sensor IR
 
 float QuerySignal() {
@@ -121,4 +178,3 @@ int16_t Call_PARK() {
   else
     return 0;
 }
-

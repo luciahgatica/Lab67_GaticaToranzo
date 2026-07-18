@@ -42,6 +42,14 @@ int16_t Set_INTENSITY1(int intensity);
 int16_t Call_TURNOFF1();
 int16_t Set_INTENSITY2(int intensity);
 int16_t Call_TURNOFF2();
+int16_t Set_INTENSITY3(int intensity);
+int16_t Call_TURNOFF3();
+int16_t Set_INTENSITY4(int intensity);
+int16_t Call_TURNOFF4();
+int16_t Set_INTENSITY5(int intensity);
+int16_t Call_TURNOFF5();
+int16_t Set_INTENSITY6(int intensity);
+int16_t Call_TURNOFF6();
 // Sensor functions
 float QuerySignal();
 // Parking functions
