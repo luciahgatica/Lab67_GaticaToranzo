@@ -1971,3 +1971,127 @@ def recontruction_metricas(
         "h_error": h_error
     }
     return recovery_errs_df
+
+def intersection_circles_area(d, R):
+    """Return the area of intersection of two circles of radii R and
+    their centres are separated by d
+    """
+    
+    R2 = R**2
+    alpha = np.arccos(d / (2 * R))
+    return (
+        2 * R2 * alpha
+        - R2 * np.sin(2 * alpha)
+    )
+
+def circunf_max_equi_overlap(overlap: int, OTF: int, theta: float, lmbd: float, fourier_pixel_factor: float) -> list:
+    '''
+
+    Parameters
+    ----------
+    overlap : int
+        porcentaje de overlap deseado entre OTF en espacio k-px.
+    OTF : int
+        radio de la OTF en k-px.
+    theta : float
+        angulo del led más lejano.
+    lmbd : float
+        longitud de onda de la luz incidente.
+    fourier_pixel_factor : float
+        factor de conversión - espacio k / fourier_pixel_factor = k pixels
+
+    Returns
+    -------
+    paso_phi : float
+        paso del motor que se toma en la circunferencia más lejana para obtener el overlap deseado
+
+    '''
+    
+    k = (2 * np.pi) / lmbd
+    porcentaje_overlap = 100
+    angulos_completos = np.arange(0, 200, 1) * (np.pi / 100)
+    
+    kx_px_0 = (k / (2 * np.pi * fourier_pixel_factor)) * np.sin(theta) * np.cos(0)
+    ky_px_0 = (k / (2 * np.pi * fourier_pixel_factor)) * np.sin(theta) * np.sin(0)
+    divisores = [i for i in range(1, len(angulos_completos)+1) if len(angulos_completos) % i == 0]
+    
+    for div in range(len(divisores)):
+        phi_ind = angulos_completos[divisores[div]]
+    
+        kx_px_ind = (k / (2 * np.pi * fourier_pixel_factor)) * np.sin(theta) * np.cos(phi_ind)
+        ky_px_ind = (k / (2 * np.pi * fourier_pixel_factor)) * np.sin(theta) * np.sin(phi_ind)
+
+        d = np.sqrt((kx_px_ind-kx_px_0)**2 + (ky_px_ind-ky_px_0)**2)
+        area = np.pi * OTF**2
+        porcentaje_overlap = intersection_circles_area(d, OTF) * 100 / area
+        
+        if porcentaje_overlap < overlap:
+            break
+        
+    paso_motor = divisores[div-1] * (np.pi / 100)
+    angulos_motor = np.arange(0, 2 * np.pi, paso_motor)
+    return angulos_motor
+
+def calculate_led_positions_brazo_equi(overlap: int, OTF: int, angulos_motor: list, thetas: list, 
+                               brazo_radio: float, lmbd: float, fourier_pixel_factor: float) -> RealSpace3:
+    
+    '''
+    Parameters
+    ----------
+    overlap : int
+        porcentaje de overlap deseado entre OTF en espacio k-px.
+    OTF : int
+        radio de la OTF en k-px.
+    angulos_motor : list
+        lista de pasos del motor que se toma en la circunferencia más lejana para obtener el overlap deseado
+    thetas : list
+        angulos de los leds sobre el brazo con el 0 en el led central.
+    brazo_radio : float
+        radio del brazo en m.
+    lmbd : float
+        longitud de onda de la luz incidente.
+    fourier_pixel_factor : float
+        factor de conversión - espacio k / fourier_pixel_factor = k pixels
+
+
+    Returns
+    -------
+    led_positions : RealSpace3
+        diccionario que etiqueta (theta,phi): (x,y,z).
+    '''
+    
+    k = 2 * np.pi / lmbd
+    led_positions = {}
+    led_positions[(1,1)] = (np.float64(0),np.float64(0),np.float64(brazo_radio))
+    divisores = [i for i in range(1, len(angulos_motor)+1) if len(angulos_motor) % i == 0]
+
+    for i in range(len(thetas)):
+        theta_i = thetas[i]
+        phi_ind = angulos_motor[0]
+        kx_px_0 = (k / (2 * np.pi * fourier_pixel_factor)) * np.sin(theta_i) * np.cos(phi_ind)
+        ky_px_0 = (k / (2 * np.pi * fourier_pixel_factor)) * np.sin(theta_i) * np.sin(phi_ind)
+        
+        for div in range(1,len(divisores)):
+            phi_ind = angulos_motor[divisores[div]-1] 
+        
+            kx_px_ind = (k / (2 * np.pi * fourier_pixel_factor)) * np.sin(theta_i) * np.cos(phi_ind)
+            ky_px_ind = (k / (2 * np.pi * fourier_pixel_factor)) * np.sin(theta_i) * np.sin(phi_ind)
+
+            d = np.sqrt((kx_px_ind-kx_px_0)**2 + (ky_px_ind-ky_px_0)**2)
+            area = np.pi * OTF**2
+            porcentaje_overlap = intersection_circles_area(d, OTF) * 100 / area
+            
+            if porcentaje_overlap < overlap or np.isnan(porcentaje_overlap):
+                break
+            
+        phi_list = angulos_motor[::divisores[div]]
+        if overlap - porcentaje_overlap > 15:
+            phi_list = angulos_motor[::divisores[div-1]]
+        
+        #np.append(phi_list, 2*np.pi)
+        for ind in range(len(phi_list)):
+            led_positions[(i+2,ind+1)] = (brazo_radio * np.sin(theta_i) * np.cos(phi_list[ind]),
+                                        brazo_radio * np.sin(theta_i) * np.sin(phi_list[ind]),
+                                        brazo_radio * np.cos(theta_i))
+            
+    return led_positions
