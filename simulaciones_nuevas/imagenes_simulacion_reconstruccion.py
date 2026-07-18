@@ -3,11 +3,12 @@ import pathlib
 import numpy as np
 import numpy.typing as npt
 import matplotlib.pyplot as plt
+import os
+os.chdir(r'C:\Users\nahue\OneDrive\Documents\Arduino\simulaciones_nuevas')
 from common import read_into_complex_image, calculate_k_vectors_k_indices_sample_tilt, simulate, save_images, create_pupil, sum_pupils, reconstruct, calculate_k_vectors_k_indices, led_errors_incorporated, plot_convergence, read_numpy_file, reconstruct_test
 import time
 from tqdm import tqdm
 import sys
-import os
 from skopt import callbacks
 from skopt.callbacks import CheckpointSaver
 from skopt import gp_minimize
@@ -17,7 +18,7 @@ from functools import partial
 
 time_start = time.time()
 # Establecemos la carpeta en la que trabajaremos
-ROOT = pathlib.Path(r"C:\Users\nahue\OneDrive\Escritorio\test")
+ROOT = pathlib.Path(r"C:\Users\nahue\OneDrive\Documents\Arduino\simulaciones_nuevas")
 # Establecemos la carpeta con las imágenes a simular y la carpeta en donde se guardarán las imágenes
 # input_filedir = ROOT / "muestras_simuladas"
 # output_filedir = ROOT / "simulacion_nueva"
@@ -168,33 +169,72 @@ def recontruction_pipeline(
     k_vectors, k_indexes = calculate_k_vectors_k_indices( 
     led_positions, wavelength, sample_position, dc_location, fourier_pixel_factor)  
 
-    # Filtramos los datos quitando un número de imagenes correspondientes a un número de leds en cada lado de las filas y columnas
-    # 1. Definir los límites del cuadrado (como ya lo hacías)
-    start_x = numb_external_leds_discarded_row_column + 1
-    end_x = leds_number_x + 1 - numb_external_leds_discarded_row_column
-    step = numb_internal_leds_discarded_row_column + 1
+# =============================================================================
+#     # Filtramos los datos quitando un número de imagenes correspondientes a un número de leds en cada lado de las filas y columnas
+#     # 1. Definir los límites del cuadrado (como ya lo hacías)
+#     start_x = numb_external_leds_discarded_row_column + 1
+#     end_x = leds_number_x + 1 - numb_external_leds_discarded_row_column
+#     step = numb_internal_leds_discarded_row_column + 1
+# 
+#     start_y = numb_external_leds_discarded_row_column + 1
+#     end_y = leds_number_y + 1 - numb_external_leds_discarded_row_column
+# 
+#     # 2. Encontrar el centro exacto de la matriz
+#     center_x = (leds_number_x + 1) / 2.0
+#     center_y = (leds_number_y + 1) / 2.0
+# 
+#     # 3. Calcular el radio cuadrado máximo sobre los ejes
+#     # (Distancia desde el centro hasta tu límite de descarte original)
+#     radius_x = abs((end_x - 1) - center_x)
+#     radius_y = abs((end_y - 1) - center_y)
+#     radius_sq = min(radius_x, radius_y) ** 2  # Usamos el radio al cuadrado para evitar raíces cuadradas (más rápido)
+# 
+#     # 4. Generar coordenadas con el filtro circular aplicado
+#     filtered_coordinates = [
+#         (i, j) 
+#         for i in range(start_x, end_x, step) 
+#         for j in range(start_y, end_y, step)
+#         # Condición circular: la distancia al centro debe ser menor o igual al radio
+#         if (i - center_x)**2 + (j - center_y)**2 <= radius_sq
+#     ]
+# 
+#     # 5. Mantener tus diccionarios intactos
+#     filtered_indexes = {key: k_indexes[key] for key in filtered_coordinates if key in leds_indexes}
+#     filtered_indexes_tilt = {key: k_indexes_tilt[key] for key in filtered_coordinates if key in leds_indexes}
+#     filtered_data = {key: data[key] for key in filtered_indexes_tilt if key in leds_indexes}
+# =============================================================================
 
-    start_y = numb_external_leds_discarded_row_column + 1
-    end_y = leds_number_y + 1 - numb_external_leds_discarded_row_column
+# =============================================================================
+#     ####### MATRIZ #######
+#     
+#     # Filtramos los datos para la matriz cuadrada
+#     # 1. Definir los límites del cuadrado (como ya lo hacías)
+#     start_x = numb_external_leds_discarded_row_column + 1
+#     end_x = leds_number_x + 1 - numb_external_leds_discarded_row_column
+#     step = 2
+# 
+#     start_y = numb_external_leds_discarded_row_column + 1
+#     end_y = leds_number_y + 1 - numb_external_leds_discarded_row_column
+# 
+#     # 4. Generar coordenadas con el filtro aplicado
+#     filtered_coordinates = [
+#         (i, j) 
+#         for i in range(start_x, end_x, step) 
+#         for j in range(start_y, end_y, step)
+#         ]
+# =============================================================================
 
-    # 2. Encontrar el centro exacto de la matriz
-    center_x = (leds_number_x + 1) / 2.0
-    center_y = (leds_number_y + 1) / 2.0
-
-    # 3. Calcular el radio cuadrado máximo sobre los ejes
-    # (Distancia desde el centro hasta tu límite de descarte original)
-    radius_x = abs((end_x - 1) - center_x)
-    radius_y = abs((end_y - 1) - center_y)
-    radius_sq = min(radius_x, radius_y) ** 2  # Usamos el radio al cuadrado para evitar raíces cuadradas (más rápido)
-
-    # 4. Generar coordenadas con el filtro circular aplicado
-    filtered_coordinates = [
-        (i, j) 
-        for i in range(start_x, end_x, step) 
-        for j in range(start_y, end_y, step)
-        # Condición circular: la distancia al centro debe ser menor o igual al radio
-        if (i - center_x)**2 + (j - center_y)**2 <= radius_sq
-    ]
+    ####### BRAZO #######
+    
+    # Filtramos los datos para la matriz cuadrada
+    # 1. Definir los límites 
+    
+    keys_dict_de_leds = list(led_positions.keys())
+    leds_para_reconstruir = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+    filtered_coordinates = []
+    for led, angulo in keys_dict_de_leds:
+        if led in leds_para_reconstruir:
+            filtered_coordinates.append((led, angulo))
 
     # 5. Mantener tus diccionarios intactos
     filtered_indexes = {key: k_indexes[key] for key in filtered_coordinates if key in leds_indexes}
