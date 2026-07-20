@@ -5,7 +5,7 @@ sample_height = 0
 sample_position = (0, 0, sample_height)
 
 numerical_aperture = 0.07
-wavelength = 6e-7 #4.7e-07: "blue" , 5.3e-07: "green", 6.8e-07: "red"
+wavelength = 5.3e-7 #4.7e-07: "blue" , 5.3e-07: "green", 6.8e-07: "red"
 pixel_size = 3.2e-6
 magnification = 1
 
@@ -16,13 +16,13 @@ led_equiespaciados = True
 brazo = True
 
 radio_brazo = 9.1 * 10**(-2)
-n_leds_brazo = 9
-overlap = 40
+n_leds_brazo = 10
+overlap = 35
 
 if brazo:
     central_led = (1, 1)
 
-    max_theta = 70 * (np.pi/180)
+    max_theta = 66 * (np.pi/180)
     max_angle = max_theta
 
     ratio_LR = calculate_LR_ratio(numerical_aperture, max_angle)
@@ -41,15 +41,15 @@ if brazo:
     led_positions = calculate_led_positions_brazo_equi(overlap, 37 // 2, angulos_motor,
                                                        thetas, radio_brazo, wavelength, fourier_pixel_factor)
     max_angle = calulate_max_angle(led_positions, central_led, sample_height)            
-    leds_number_x = 250
-    leds_number_y = 250
+    leds_number_x = 10
+    leds_number_y = 200
 else: 
     leds_number_x = 31
     leds_number_y = 31
     central_led = (leds_number_x + 1) // 2, (leds_number_y + 1) // 2
 
     if led_equiespaciados:
-        led_spacing = 6e-3 
+        led_spacing = 5.4e-3 
         led_positions = calculate_led_positions_equi(leds_number_x, leds_number_y, led_spacing, matrix_center)
     else:
         #Calculamos el k_spacing teniendo en cuenta la cantidad de leds como k_spacing = 2*np.pi()*fourier_pixe_factor*(512/33) aprox un k_spacing en pixeles de 15
@@ -92,6 +92,54 @@ if led_equiespaciados:
     led_positions_tilt = {}
     for key, coordenada in led_positions_failed.items():
         led_positions_tilt[key] = euler_angles_incorporated(led_alpha, led_beta, led_gamma, coordenada)
+
+
+# =============================================================================
+# # Para graficar el espacio de Fourier
+# 
+# hr_shape = (number_pixels_HR, number_pixels_HR)
+# lr_shape = (int(number_pixels_LR), int(number_pixels_LR))
+# 
+# dc_location = np.asarray(hr_shape) // 2
+# k_vectors, k_indexes = calculate_k_vectors_k_indices(led_positions, wavelength,
+#     sample_position, dc_location, fourier_pixel_factor)
+# 
+# 
+# ########### Brazo ############ 
+# if brazo:
+#     leds_para_reconstruir = [1,2,3,4,5,6,7,8,9,10]
+#     filtered_indexes = {
+#         key: value
+#         for key, value in k_indexes.items()
+#         if key[0] in leds_para_reconstruir
+#         }
+#     
+# ########### Matriz ############
+# else:
+#     numb_external_leds_discarded_row_column = 0 
+#     start_x = numb_external_leds_discarded_row_column + 1
+#     end_x = leds_number_x + 1 - numb_external_leds_discarded_row_column
+#     step = 2
+#     
+#     start_y = numb_external_leds_discarded_row_column + 1
+#     end_y = leds_number_y + 1 - numb_external_leds_discarded_row_column
+#     
+#     # 4. Generar coordenadas con el filtro aplicado
+#     filtered_coordinates = [
+#         (i, j) 
+#         for i in range(start_x, end_x, step) 
+#         for j in range(start_y, end_y, step)
+#         ]
+#     filtered_indexes = {key: k_indexes[key] for key in filtered_coordinates if key in k_indexes}
+# 
+# 
+# 
+# filtered_matrix = sum_pupils(hr_shape, lr_shape, round(min(lr_shape) * 0.5), 
+#                              filtered_indexes)
+# plt.imshow(filtered_matrix)
+# plt.show()
+# =============================================================================
+
 
 #     import numpy as np
 #     import matplotlib.pyplot as plt

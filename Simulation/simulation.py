@@ -4,7 +4,7 @@ import numpy as np
 import numpy.typing as npt
 import matplotlib.pyplot as plt
 import os
-os.chdir(r'C:\Users\nahue\OneDrive\Documents\Arduino\simulaciones_nuevas')
+os.chdir(r'C:\Users\Lenovo\Desktop\Labo67\repo_git\Simulation')
 from common import read_into_complex_image, calculate_k_vectors_k_indices_sample_tilt, simulate, save_images, create_pupil, sum_pupils, reconstruct, calculate_k_vectors_k_indices, led_errors_incorporated, plot_convergence, read_numpy_file, reconstruct_test
 import time
 from tqdm import tqdm
@@ -18,7 +18,7 @@ from functools import partial
 
 time_start = time.time()
 # Establecemos la carpeta en la que trabajaremos
-ROOT = pathlib.Path(r"C:\Users\nahue\OneDrive\Documents\Arduino\simulaciones_nuevas")
+ROOT = pathlib.Path(r"C:\Users\Lenovo\Desktop\Labo67\repo_git\Simulation")
 # Establecemos la carpeta con las imágenes a simular y la carpeta en donde se guardarán las imágenes
 # input_filedir = ROOT / "muestras_simuladas"
 # output_filedir = ROOT / "simulacion_nueva"
@@ -106,6 +106,8 @@ def recontruction_pipeline(
         leds_number_y,
         numb_external_leds_discarded_row_column,
         numb_internal_leds_discarded_row_column,
+        numb_LEDs_brazo,
+        brazo,
         led_spacing_error,
         x_offset,
         y_offset, 
@@ -204,39 +206,37 @@ def recontruction_pipeline(
 #     filtered_data = {key: data[key] for key in filtered_indexes_tilt if key in leds_indexes}
 # =============================================================================
 
-# =============================================================================
-#     ####### MATRIZ #######
-#     
-#     # Filtramos los datos para la matriz cuadrada
-#     # 1. Definir los límites del cuadrado (como ya lo hacías)
-#     start_x = numb_external_leds_discarded_row_column + 1
-#     end_x = leds_number_x + 1 - numb_external_leds_discarded_row_column
-#     step = 2
-# 
-#     start_y = numb_external_leds_discarded_row_column + 1
-#     end_y = leds_number_y + 1 - numb_external_leds_discarded_row_column
-# 
-#     # 4. Generar coordenadas con el filtro aplicado
-#     filtered_coordinates = [
-#         (i, j) 
-#         for i in range(start_x, end_x, step) 
-#         for j in range(start_y, end_y, step)
-#         ]
-# =============================================================================
-
     ####### BRAZO #######
+    if brazo:
+        # Filtramos los datos para la matriz cuadrada
+        # 1. Definir los límites 
+        
+        keys_dict_de_leds = list(led_positions.keys())
+        leds_para_reconstruir = np.arange(1, LEDs_brazo+1, 1)
+        filtered_coordinates = []
+        for led, paso in keys_dict_de_leds:
+            if led in leds_para_reconstruir:
+                filtered_coordinates.append((led, paso))
     
-    # Filtramos los datos para la matriz cuadrada
-    # 1. Definir los límites 
-    
-    keys_dict_de_leds = list(led_positions.keys())
-    leds_para_reconstruir = [1, 2, 3, 4, 5, 6, 7, 8, 9]
-    filtered_coordinates = []
-    for led, angulo in keys_dict_de_leds:
-        if led in leds_para_reconstruir:
-            filtered_coordinates.append((led, angulo))
+    ####### MATRIZ #######
+    else:
+        # Filtramos los datos para la matriz cuadrada
+        # 1. Definir los límites del cuadrado y el paso en la iluminación
+        start_x = numb_external_leds_discarded_row_column + 1
+        end_x = leds_number_x + 1 - numb_external_leds_discarded_row_column
+        step = 2
 
-    # 5. Mantener tus diccionarios intactos
+        start_y = numb_external_leds_discarded_row_column + 1
+        end_y = leds_number_y + 1 - numb_external_leds_discarded_row_column
+
+        # 2. Generar coordenadas con el filtro aplicado
+        filtered_coordinates = [
+            (i, j) 
+            for i in range(start_x, end_x, step) 
+            for j in range(start_y, end_y, step)
+            ]
+
+    # Mantener tus diccionarios intactos
     filtered_indexes = {key: k_indexes[key] for key in filtered_coordinates if key in leds_indexes}
     filtered_indexes_tilt = {key: k_indexes_tilt[key] for key in filtered_coordinates if key in leds_indexes}
     filtered_data = {key: data[key] for key in filtered_indexes_tilt if key in leds_indexes}
@@ -314,8 +314,13 @@ def recontruction_pipeline(
     perfil_target_df = pd.DataFrame.from_records(perfil_target)
     # z0=np.append(z0,z00,axis=0)   #z0.append(z00)
     # im_r=np.append(im_r,im_r00)  #im_r.append(im_r00)
-    folder_intermedias = f"imagenes_intermedias_iter_{iterations}"
-    os.makedirs(ROOT/folder_intermedias, exist_ok=True)
+    
+    if brazo:
+        folder_intermedias = f"brazo\\{LEDs_brazo}_LEDs\\{iterations}_it\\imagenes_intermedias_iter_{iterations}"
+        os.makedirs(ROOT/folder_intermedias, exist_ok=True)
+    else:
+        folder_intermedias = f"matriz\\{(16 - 2*numb_external_leds_discarded_row_column)**2}_LEDs\\{iterations}_it\\imagenes_intermedias_iter_{iterations}"
+        os.makedirs(ROOT/folder_intermedias, exist_ok=True)
 
     print("Guardando capturas de imágenes intermedias...")
     
@@ -365,11 +370,11 @@ def recontruction_pipeline(
     plt.plot(iteraciones_x, recovery_errs)
     plt.xlabel('Iteration')
     plt.ylabel('Recovery Error')
-    RE_default_filename = f"RE_{default_filename}"
-    plt.savefig(RE_default_filename)
+    RE_default_filename = f"RE_{default_filename}.png"
+    plt.savefig(os.path.join(save_filedir, RE_default_filename))
     # plt.show()
     plt.legend()
-    np.save('recovery_errs',recovery_errs)
+    np.save(os.path.join(save_filedir, 'recovery_errs.npy'),recovery_errs)
 
     plt.plot(iteraciones_x, phase_max, 'b-', label='Phase max/pi')
     plt.plot(iteraciones_x, phase_min, 'r-', label='Phase min/pi')
@@ -410,16 +415,17 @@ def recontruction_pipeline(
     }
     return recovery_errs_df_HR, diferencias_df, recovery_errs_df_LR, perfiles_df, perfil_target_df
 
-from microscope_config import ratio_LR, led_positions, sample_position, fourier_pixel_factor, leds_number_x, leds_number_y, sample_beta, h_error, x_offset, y_offset, led_spacing_error, led_alpha, led_beta, led_gamma
+from microscope_config import ratio_LR, led_positions, sample_position, fourier_pixel_factor, leds_number_x, leds_number_y, sample_beta, h_error, x_offset, y_offset, led_spacing_error, led_alpha, led_beta, led_gamma, brazo
 
 debug = False
-iterations = 10
+iterations = int(10000) + 1
 sigmaN = [0.004]
 mu_max = 0.4
 weight = 1
-numb_external_leds_discarded_row_column = 5
+numb_external_leds_discarded_row_column = 0
 numb_internal_leds_discarded_row_column = 0
-n_iteraciones_a_guardar = 1
+LEDs_brazo = 10
+n_iteraciones_a_guardar = int(500) 
 
 config_colores = {
     #4.7e-07: {"name": "blue", "wave": 4.7e-07},
@@ -429,7 +435,10 @@ config_colores = {
 size_de_imagenes = 512
 for wave, info in config_colores.items():
     input_filedir = ROOT / "data_source"
-    output_filedir = ROOT / f"simulacion_nueva_{info["name"]}"
+    if brazo:
+        output_filedir = ROOT / f"brazo\\simulacion_nueva_{info["name"]}"
+    else:
+        output_filedir = ROOT / f"matriz\\simulacion_nueva_{info["name"]}"
     # Nombres de las imágenes de magnitud y fase
     mag_image = "Map_512.tiff"
     phase_image = "baboon.tif"
@@ -457,7 +466,10 @@ for wave, info in config_colores.items():
     recovery_error_required = 1
     print()
     print(f"Recontruccion en el color {info['name']}")
-    save_filedir = ROOT/ f"{info['name']}"
+    if brazo:
+        save_filedir = ROOT/ f"brazo\\{LEDs_brazo}_LEDs\\{iterations}_it\\{info['name']}"
+    else:
+        save_filedir = ROOT/ f"matriz\\{(16 - 2*numb_external_leds_discarded_row_column)**2}_LEDs\\{iterations}_it\\{info['name']}"
     for sigma in sigmaN:
         df_results_reconstruccion_exacta_HR, df_diferencias, df_results_reconstruccion_exacta_LR, perfiles_df, perfil_target_df = recontruction_pipeline(
         0,
@@ -481,6 +493,8 @@ for wave, info in config_colores.items():
         leds_number_y,
         numb_external_leds_discarded_row_column,
         numb_internal_leds_discarded_row_column,
+        LEDs_brazo,
+        brazo,
         0,
         x_offset=x_offset,
         y_offset=y_offset,

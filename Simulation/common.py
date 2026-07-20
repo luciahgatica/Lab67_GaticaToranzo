@@ -2062,36 +2062,45 @@ def calculate_led_positions_brazo_equi(overlap: int, OTF: int, angulos_motor: li
     
     k = 2 * np.pi / lmbd
     led_positions = {}
-    led_positions[(1,1)] = (np.float64(0),np.float64(0),np.float64(brazo_radio))
-    divisores = [i for i in range(1, len(angulos_motor)+1) if len(angulos_motor) % i == 0]
+    led_positions[(1, 1)] = (np.float64(0),np.float64(0),np.float64(brazo_radio))
+    divisores = np.array([i for i in range(1, len(angulos_motor)+1) if len(angulos_motor) % i == 0]) 
+    area = np.pi * OTF**2
 
     for i in range(len(thetas)):
         theta_i = thetas[i]
-        phi_ind = angulos_motor[0]
-        kx_px_0 = (k / (2 * np.pi * fourier_pixel_factor)) * np.sin(theta_i) * np.cos(phi_ind)
-        ky_px_0 = (k / (2 * np.pi * fourier_pixel_factor)) * np.sin(theta_i) * np.sin(phi_ind)
+        kx_px_0 = (k / (2 * np.pi * fourier_pixel_factor)) * np.sin(theta_i) * np.cos(0)
+        ky_px_0 = (k / (2 * np.pi * fourier_pixel_factor)) * np.sin(theta_i) * np.sin(0)
+    
+        best_div = divisores[0]
+        best_err = 1e9
         
-        for div in range(1,len(divisores)):
-            phi_ind = angulos_motor[divisores[div]-1] 
-        
+        j = 0
+        for div in divisores:
+            phi_ind = angulos_motor[div-1]
             kx_px_ind = (k / (2 * np.pi * fourier_pixel_factor)) * np.sin(theta_i) * np.cos(phi_ind)
             ky_px_ind = (k / (2 * np.pi * fourier_pixel_factor)) * np.sin(theta_i) * np.sin(phi_ind)
-
-            d = np.sqrt((kx_px_ind-kx_px_0)**2 + (ky_px_ind-ky_px_0)**2)
-            area = np.pi * OTF**2
-            porcentaje_overlap = intersection_circles_area(d, OTF) * 100 / area
-            
-            if porcentaje_overlap < overlap or np.isnan(porcentaje_overlap):
-                break
-            
-        phi_list = angulos_motor[::divisores[div]]
-        if overlap - porcentaje_overlap > 15:
-            phi_list = angulos_motor[::divisores[div-1]]
         
-        #np.append(phi_list, 2*np.pi)
+            d = np.sqrt((kx_px_ind-kx_px_0)**2 + (ky_px_ind-ky_px_0)**2)
+            ov = intersection_circles_area(d, OTF) * 100 / area
+            if np.isnan(ov):
+                continue
+        
+            err = abs(ov - overlap)
+            if err < best_err:
+                best_err = err
+                best_div = div            
+                if ov < overlap - 10:
+                    best_div = divisores[j-1]
+            j += 1
+        phi_list = angulos_motor[::best_div]
+
         for ind in range(len(phi_list)):
-            led_positions[(i+2,ind+1)] = (brazo_radio * np.sin(theta_i) * np.cos(phi_list[ind]),
-                                        brazo_radio * np.sin(theta_i) * np.sin(phi_list[ind]),
-                                        brazo_radio * np.cos(theta_i))
+            # Ojo al etiquetar los pasos. Se cargaron la cantidad de pasos que rellenan la circunferencia
+            # exterior. El indice corre distinto para los pasos del motor
+            led_positions[(i + 2, ind + 1)] = (
+                            brazo_radio * np.sin(theta_i) * np.cos(phi_list[ind]),
+                            brazo_radio * np.sin(theta_i) * np.sin(phi_list[ind]),
+                            brazo_radio * np.cos(theta_i)
+                            )
             
     return led_positions
