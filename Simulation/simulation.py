@@ -236,6 +236,7 @@ def recontruction_pipeline(
             for j in range(start_y, end_y, step)
             ]
 
+    print(f'# fotos : {fotos_matriz}')
     # Mantener tus diccionarios intactos
     filtered_indexes = {key: k_indexes[key] for key in filtered_coordinates if key in leds_indexes}
     filtered_indexes_tilt = {key: k_indexes_tilt[key] for key in filtered_coordinates if key in leds_indexes}
@@ -319,7 +320,7 @@ def recontruction_pipeline(
         folder_intermedias = f"brazo\\{LEDs_brazo}_LEDs\\{iterations}_it\\imagenes_intermedias_iter_{iterations}"
         os.makedirs(ROOT/folder_intermedias, exist_ok=True)
     else:
-        folder_intermedias = f"matriz\\{(16 - 2*numb_external_leds_discarded_row_column)**2}_LEDs\\{iterations}_it\\imagenes_intermedias_iter_{iterations}"
+        folder_intermedias = f"matriz\\{fotos_matriz}_LEDs\\{iterations}_it\\imagenes_intermedias_iter_{iterations}"
         os.makedirs(ROOT/folder_intermedias, exist_ok=True)
 
     print("Guardando capturas de imágenes intermedias...")
@@ -418,14 +419,16 @@ def recontruction_pipeline(
 from microscope_config import ratio_LR, led_positions, sample_position, fourier_pixel_factor, leds_number_x, leds_number_y, sample_beta, h_error, x_offset, y_offset, led_spacing_error, led_alpha, led_beta, led_gamma, brazo
 
 debug = False
-iterations = int(10000) + 1
+iterations = int(500) + 1
 sigmaN = [0.004]
 mu_max = 0.4
 weight = 1
-numb_external_leds_discarded_row_column = 0
+numb_external_leds_discarded_row_column = 13
 numb_internal_leds_discarded_row_column = 0
-LEDs_brazo = 10
-n_iteraciones_a_guardar = int(500) 
+LEDs_brazo = 2
+n_iteraciones_a_guardar = int(50)
+fotos_matriz = len(np.arange(numb_external_leds_discarded_row_column + 1,
+                leds_number_x + 1 - numb_external_leds_discarded_row_column, 2))**2
 
 config_colores = {
     #4.7e-07: {"name": "blue", "wave": 4.7e-07},
@@ -469,7 +472,7 @@ for wave, info in config_colores.items():
     if brazo:
         save_filedir = ROOT/ f"brazo\\{LEDs_brazo}_LEDs\\{iterations}_it\\{info['name']}"
     else:
-        save_filedir = ROOT/ f"matriz\\{(16 - 2*numb_external_leds_discarded_row_column)**2}_LEDs\\{iterations}_it\\{info['name']}"
+        save_filedir = ROOT/ f"matriz\\{fotos_matriz}_LEDs\\{iterations}_it\\{info['name']}"
     for sigma in sigmaN:
         df_results_reconstruccion_exacta_HR, df_diferencias, df_results_reconstruccion_exacta_LR, perfiles_df, perfil_target_df = recontruction_pipeline(
         0,

@@ -13,11 +13,11 @@ magnification = 1
 """Fourier Pixel Factor para la configuración que tenemos y un HR_shape de 512x512"""
 
 led_equiespaciados = True
-brazo = True
+brazo = False
 
 radio_brazo = 9.1 * 10**(-2)
 n_leds_brazo = 10
-overlap = 35
+overlap = 30
 
 if brazo:
     central_led = (1, 1)
