@@ -13,7 +13,7 @@ magnification = 1
 """Fourier Pixel Factor para la configuración que tenemos y un HR_shape de 512x512"""
 
 led_equiespaciados = True
-brazo = False
+brazo = True
 
 radio_brazo = 9.1 * 10**(-2)
 n_leds_brazo = 10
@@ -94,51 +94,52 @@ if led_equiespaciados:
         led_positions_tilt[key] = euler_angles_incorporated(led_alpha, led_beta, led_gamma, coordenada)
 
 
-# =============================================================================
-# # Para graficar el espacio de Fourier
-# 
-# hr_shape = (number_pixels_HR, number_pixels_HR)
-# lr_shape = (int(number_pixels_LR), int(number_pixels_LR))
-# 
-# dc_location = np.asarray(hr_shape) // 2
-# k_vectors, k_indexes = calculate_k_vectors_k_indices(led_positions, wavelength,
-#     sample_position, dc_location, fourier_pixel_factor)
-# 
-# 
-# ########### Brazo ############ 
-# if brazo:
-#     leds_para_reconstruir = [1,2,3,4,5,6,7,8,9,10]
-#     filtered_indexes = {
-#         key: value
-#         for key, value in k_indexes.items()
-#         if key[0] in leds_para_reconstruir
-#         }
-#     
-# ########### Matriz ############
-# else:
-#     numb_external_leds_discarded_row_column = 0 
-#     start_x = numb_external_leds_discarded_row_column + 1
-#     end_x = leds_number_x + 1 - numb_external_leds_discarded_row_column
-#     step = 2
-#     
-#     start_y = numb_external_leds_discarded_row_column + 1
-#     end_y = leds_number_y + 1 - numb_external_leds_discarded_row_column
-#     
-#     # 4. Generar coordenadas con el filtro aplicado
-#     filtered_coordinates = [
-#         (i, j) 
-#         for i in range(start_x, end_x, step) 
-#         for j in range(start_y, end_y, step)
-#         ]
-#     filtered_indexes = {key: k_indexes[key] for key in filtered_coordinates if key in k_indexes}
-# 
-# 
-# 
-# filtered_matrix = sum_pupils(hr_shape, lr_shape, round(min(lr_shape) * 0.5), 
-#                              filtered_indexes)
-# plt.imshow(filtered_matrix)
-# plt.show()
-# =============================================================================
+# Para graficar el espacio de Fourier
+
+hr_shape = (number_pixels_HR, number_pixels_HR)
+lr_shape = (int(number_pixels_LR), int(number_pixels_LR))
+
+dc_location = np.asarray(hr_shape) // 2
+k_vectors, k_indexes = calculate_k_vectors_k_indices(led_positions, wavelength,
+    sample_position, dc_location, fourier_pixel_factor)
+
+
+########### Brazo ############ 
+if brazo:
+    leds_para_reconstruir = [10]#[1,2,3,4,5,6,7,8,9,10]
+    filtered_indexes = {
+        key: value
+        for key, value in k_indexes.items()
+        if key[0] in leds_para_reconstruir
+        }
+    
+########### Matriz ############
+else:
+    numb_external_leds_discarded_row_column = 0 
+    start_x = numb_external_leds_discarded_row_column + 1
+    end_x = leds_number_x + 1 - numb_external_leds_discarded_row_column
+    step = 2
+    
+    start_y = numb_external_leds_discarded_row_column + 1
+    end_y = leds_number_y + 1 - numb_external_leds_discarded_row_column
+    
+    # 4. Generar coordenadas con el filtro aplicado
+    filtered_coordinates = [
+        (i, j) 
+        for i in range(start_x, end_x, step) 
+        for j in range(start_y, end_y, step)
+        ]
+    filtered_indexes = {key: k_indexes[key] for key in filtered_coordinates if key in k_indexes}
+
+
+
+filtered_matrix = sum_pupils(hr_shape, lr_shape, round(min(lr_shape) * 0.5), 
+                             filtered_indexes)
+plt.imshow(filtered_matrix)
+plt.axis('off')
+plt.legend(title='     OTF')
+# plt.savefig(r'C:\Users\Lenovo\Desktop\Labo67\InformeL7\figuras\brazo_max_ang_OTFs.svg',format='svg')
+plt.show()
 
 
 #     import numpy as np

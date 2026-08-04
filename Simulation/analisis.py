@@ -10,34 +10,36 @@ input_filedir = "data_source"
 
 # Defino los cuantificadores a utilizar
 def MSEref(mag_orig, phase_orig, mag_rec, phase_rec, px_x0, px_y0):
-    original = mag_orig * np.exp(phase_orig)
-    reconstruida = mag_rec * np.exp(phase_rec)
+    original = mag_orig * np.exp(1j * phase_orig)
+    reconstruida = mag_rec * np.exp(1j * phase_rec)
     
     original_px0 = original[px_x0][px_y0]
     reconstruida_px0 = reconstruida[px_x0][px_y0]
-    return np.mean((np.ravel(np.array(original)/original_px0) - np.ravel(np.array(reconstruida)/reconstruida_px0))**2)
+    return np.mean(np.abs(np.ravel(np.array(original)/original_px0) - np.ravel(np.array(reconstruida)/reconstruida_px0))**2)
 
 def PINCC(mag_orig, phase_orig, mag_rec, phase_rec):
-    original = mag_orig * np.exp(phase_orig)
-    reconstruida = mag_rec * np.exp(phase_rec)
-    
-    suma = 0
-    for i in range(len(np.ravel(np.array(original)))):
-        suma += np.ravel(original)[i] * np.conjugate(np.ravel(reconstruida)[i])
-    return suma / (np.linalg.norm(np.array(original)) * np.linalg.norm(np.array(reconstruida)))
+    original = mag_orig * np.exp(1j * phase_orig)
+    reconstruida = mag_rec * np.exp(1j * phase_rec)
+
+    return np.abs(np.vdot(reconstruida.ravel(), original.ravel()) / 
+                  (np.linalg.norm(original) * np.linalg.norm(reconstruida)))
 
 def RE(mag_orig, phase_orig, mag_rec, phase_rec):
-    original = mag_orig * np.exp(phase_orig)
-    reconstruida = mag_rec * np.exp(phase_rec)
+    original = mag_orig * np.exp(1j * phase_orig)
+    reconstruida = mag_rec * np.exp(1j * phase_rec)
+    original = np.fft.fftshift(np.fft.fft2(mag_orig * np.exp(1j * phase_orig)))
+    reconstruida = np.fft.fftshift(np.fft.fft2(mag_rec * np.exp(1j * phase_rec)))
     
     return np.sum(np.abs(np.abs(original) - np.abs(reconstruida))) / np.sum(np.abs(original))
 
 # Creo un selector de métricas a evaluar
 def selector(mag_orig, phase_orig, dict_mag_phase_rec, metrica, px_x0=0, px_y0=0):
+    phase_orig = ((phase_orig - phase_orig.min() / phase_orig.max())) * (np.pi / 2)
     
     resultado = {}
     for (leds, itr), (mag_rec, phase_rec) in tqdm(dict_mag_phase_rec.items(), 
                                                   'Calculando metrica'):
+        phase_rec = ((phase_rec - phase_rec.min()) / phase_rec.max()) * (np.pi / 2)
         if metrica == 'MSEref':
             resultado[(leds, itr)] = MSEref(mag_orig, phase_orig, mag_rec, 
                                             phase_rec, px_x0, px_y0)
@@ -203,7 +205,6 @@ for i in range(3, 16): # Armo contador para las configuraciones de LEDs
 
 baboon_orig_array32 = np.array(baboon_orig, dtype=np.float32)
 maps_orig_array32 = np.array(maps_orig, dtype=np.float32)
-maps_orig_array32 = maps_orig_array32*2*np.pi/np.max(maps_orig_array32)-np.pi
 
 PINCC_mag_baboon_brazo = selector(baboon_orig_array32, maps_orig_array32,
                                   mag_baboon_brazo_all_it, 'PINCC')
@@ -226,7 +227,6 @@ graficar_metrica(PearsonPhase_mag_baboon_brazo, "Pearson fase", leds_brazo, colo
 
 baboon_orig_array32 = np.array(baboon_orig, dtype=np.float32)
 maps_orig_array32 = np.array(maps_orig, dtype=np.float32)
-maps_orig_array32 = maps_orig_array32*2*np.pi/np.max(maps_orig_array32)-np.pi
 
 PINCC_mag_baboon_matriz = selector(baboon_orig_array32, maps_orig_array32,
                                   mag_baboon_matriz_all_it, 'PINCC')
@@ -249,7 +249,6 @@ graficar_metrica(PearsonPhase_mag_baboon_matriz, "Pearson fase", leds_matriz, co
 
 baboon_orig_array32 = np.array(baboon_orig, dtype=np.float32)
 maps_orig_array32 = np.array(maps_orig, dtype=np.float32)
-baboon_orig_array32 = baboon_orig_array32*2*np.pi/np.max(baboon_orig_array32)-np.pi
 
 PINCC_mag_maps_brazo = selector(maps_orig_array32, baboon_orig_array32,
                                   mag_maps_brazo_all_it, 'PINCC')
@@ -272,7 +271,6 @@ graficar_metrica(PearsonPhase_mag_maps_brazo, "Pearson fase", leds_brazo, colors
 
 baboon_orig_array32 = np.array(baboon_orig, dtype=np.float32)
 maps_orig_array32 = np.array(maps_orig, dtype=np.float32)
-baboon_orig_array32 = baboon_orig_array32*2*np.pi/np.max(baboon_orig_array32)-np.pi
 
 PINCC_mag_maps_matriz = selector(maps_orig_array32, baboon_orig_array32,
                                   mag_maps_matriz_all_it, 'PINCC')
