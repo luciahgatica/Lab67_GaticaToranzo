@@ -9,46 +9,44 @@ ROOT = r'C:\Users\Lenovo\Desktop\Labo67\repo_git\Simulation' + '\\'
 input_filedir = "data_source"
 
 # Defino los cuantificadores a utilizar
-def MSEref(mag_orig, phase_orig, mag_rec, phase_rec, px_x0, px_y0):
-    original = mag_orig * np.exp(1j * phase_orig)
-    reconstruida = mag_rec * np.exp(1j * phase_rec)
-    
+def MSEref(original, reconstruida, px_x0, px_y0):
     original_px0 = original[px_x0][px_y0]
     reconstruida_px0 = reconstruida[px_x0][px_y0]
     return np.mean(np.abs(np.ravel(np.array(original)/original_px0) - np.ravel(np.array(reconstruida)/reconstruida_px0))**2)
 
-def PINCC(mag_orig, phase_orig, mag_rec, phase_rec):
-    original = mag_orig * np.exp(1j * phase_orig)
-    reconstruida = mag_rec * np.exp(1j * phase_rec)
-
+def PINCC(original, reconstruida):
     return np.abs(np.vdot(reconstruida.ravel(), original.ravel()) / 
                   (np.linalg.norm(original) * np.linalg.norm(reconstruida)))
 
-def RE(mag_orig, phase_orig, mag_rec, phase_rec):
-    original = mag_orig * np.exp(1j * phase_orig)
-    reconstruida = mag_rec * np.exp(1j * phase_rec)
-    original = np.fft.fftshift(np.fft.fft2(mag_orig * np.exp(1j * phase_orig)))
-    reconstruida = np.fft.fftshift(np.fft.fft2(mag_rec * np.exp(1j * phase_rec)))
-    
+def RE(original, reconstruida):
     return np.sum(np.abs(np.abs(original) - np.abs(reconstruida))) / np.sum(np.abs(original))
 
 # Creo un selector de métricas a evaluar
-def selector(mag_orig, phase_orig, dict_mag_phase_rec, metrica, px_x0=0, px_y0=0):
-    phase_orig = ((phase_orig - phase_orig.min() / phase_orig.max())) * (np.pi / 2)
+def selector(mag_orig, phase_orig, dict_mag_phase_rec, metrica, px_x0=0, px_y0=0, dominio="complex"):
+    phase_orig = ((phase_orig - phase_orig.min()) / (phase_orig.max() - phase_orig.min())) * (np.pi / 2)
     
+    original = mag_orig * np.exp(1j * phase_orig)
+    if dominio == "fourier":
+        original = np.fft.fftshift(np.fft.fft2(original))
+
     resultado = {}
     for (leds, itr), (mag_rec, phase_rec) in tqdm(dict_mag_phase_rec.items(), 
                                                   'Calculando metrica'):
-        phase_rec = ((phase_rec - phase_rec.min()) / phase_rec.max()) * (np.pi / 2)
+        
+        phase_rec = ((phase_rec - phase_rec.min()) / (phase_rec.max() - phase_rec.min())) * (np.pi / 2)
+        reconstruida = mag_rec * np.exp(1j * phase_rec)
+        if dominio == "fourier":
+            reconstruida = np.fft.fftshift(np.fft.fft2(reconstruida))
+            
         if metrica == 'MSEref':
-            resultado[(leds, itr)] = MSEref(mag_orig, phase_orig, mag_rec, 
-                                            phase_rec, px_x0, px_y0)
+            resultado[(leds, itr)] = MSEref(original, reconstruida, px_x0, px_y0)
+            
         if metrica == 'PINCC':
-            resultado[(leds, itr)] = PINCC(mag_orig, phase_orig, mag_rec, phase_rec)
+            resultado[(leds, itr)] = PINCC(original, reconstruida)
         
         if metrica == 'RE':
-            resultado[(leds, itr)] = RE(mag_orig, phase_orig, mag_rec, phase_rec)
-            
+            resultado[(leds, itr)] = RE(original, reconstruida)
+                
         if metrica == 'PearsonAmp':
             resultado[(leds, itr)] = np.corrcoef(np.ravel(mag_orig), np.ravel(mag_rec))[0, 1]
                                       
@@ -64,8 +62,8 @@ def graficar_metrica(metrica, metrica_name, leds, colors):
     ax.set_xticks([10, 50, 100, 500, 1000, 5000, 10000])
     ax.set_xticklabels([10, 50, 100, 500, 1000, 5000, 10000])
     
-    if metrica_name == 'MSEref':
-        ax.set_yscale('log')
+    if "MSEref" in metrica_name:
+        ax.set_yscale("log")
     
     ax.set_xlabel("Iteraciones")
     ax.set_ylabel(metrica_name)
@@ -94,6 +92,17 @@ leds_brazo = np.arange(2, 11)
 leds_matriz = np.arange(3, 16)**2
 colors_brazo = sns.color_palette("viridis", len(leds_brazo))
 colors_matriz = sns.color_palette("viridis", len(leds_matriz))
+
+metricas = [
+    ("PINCC", "complex", "PINCC - complex img"),
+    ("MSEref", "complex", "MSEref - complex img"),
+    ("RE", "complex", "RE - complex img"),
+    ("PINCC", "fourier", "PINCC - fourier img"),
+    ("MSEref", "fourier", "MSEref - fourier img"),
+    ("RE", "fourier", "RE - fourier img"),
+    ("PearsonAmp", "complex", "Pearson amplitud"),
+    ("PearsonPhase", "complex", "Pearson fase"),
+]
 
 x0 = 0
 y0 = 0
@@ -203,88 +212,58 @@ for i in range(3, 16): # Armo contador para las configuraciones de LEDs
         
 #%% Grafico de brazo con baboon en amplitudes
 
-baboon_orig_array32 = np.array(baboon_orig, dtype=np.float32)
-maps_orig_array32 = np.array(maps_orig, dtype=np.float32)
+mag_orig = np.array(baboon_orig, dtype=np.float32)
+phase_orig = np.array(maps_orig, dtype=np.float32)
 
-PINCC_mag_baboon_brazo = selector(baboon_orig_array32, maps_orig_array32,
-                                  mag_baboon_brazo_all_it, 'PINCC')
-MSEref_mag_baboon_brazo = selector(baboon_orig_array32, maps_orig_array32,
-                                  mag_baboon_brazo_all_it, 'MSEref', x0, y0)
-RE_mag_baboon_brazo = selector(baboon_orig_array32, maps_orig_array32,
-                                  mag_baboon_brazo_all_it, 'RE')
-PearsonAmp_mag_baboon_brazo = selector(baboon_orig_array32, maps_orig_array32,
-                                  mag_baboon_brazo_all_it, 'PearsonAmp')
-PearsonPhase_mag_baboon_brazo = selector(baboon_orig_array32, maps_orig_array32,
-                                  mag_baboon_brazo_all_it, 'PearsonPhase')
+resultados = {}
+for metrica, dominio, nombre in metricas:
+    # Llamada uniforme usando argumentos explícitos por nombre
+    resultados[metrica] = selector(mag_orig, phase_orig, 
+                                   mag_baboon_brazo_all_it, metrica, 
+                                   px_x0=x0, px_y0=y0, dominio=dominio)
 
-graficar_metrica(PINCC_mag_baboon_brazo, "PINCC", leds_brazo, colors_brazo)
-graficar_metrica(MSEref_mag_baboon_brazo, "MSEref", leds_brazo, colors_brazo)
-graficar_metrica(RE_mag_baboon_brazo, "RE", leds_brazo, colors_brazo)
-graficar_metrica(PearsonAmp_mag_baboon_brazo, "Pearson amplitud", leds_brazo, colors_brazo)
-graficar_metrica(PearsonPhase_mag_baboon_brazo, "Pearson fase", leds_brazo, colors_brazo)
-
+    # Graficar y mostrar
+    fig, ax = graficar_metrica(resultados[metrica], nombre, leds_brazo, colors_brazo)
+    plt.show()  # Muestra la figura en pantalla
+    
 #%% Grafico de matriz con baboon en amplitudes
 
-baboon_orig_array32 = np.array(baboon_orig, dtype=np.float32)
-maps_orig_array32 = np.array(maps_orig, dtype=np.float32)
+resultados = {}
+for metrica, dominio, nombre in metricas:
+    # Llamada uniforme usando argumentos explícitos por nombre
+    resultados[metrica] = selector(mag_orig, phase_orig, 
+                                   mag_baboon_matriz_all_it, metrica, 
+                                   px_x0=x0, px_y0=y0, dominio=dominio)
 
-PINCC_mag_baboon_matriz = selector(baboon_orig_array32, maps_orig_array32,
-                                  mag_baboon_matriz_all_it, 'PINCC')
-MSEref_mag_baboon_matriz = selector(baboon_orig_array32, maps_orig_array32,
-                                  mag_baboon_matriz_all_it, 'MSEref', x0, y0)
-RE_mag_baboon_matriz = selector(baboon_orig_array32, maps_orig_array32,
-                                  mag_baboon_matriz_all_it, 'RE')
-PearsonAmp_mag_baboon_matriz = selector(baboon_orig_array32, maps_orig_array32,
-                                  mag_baboon_matriz_all_it, 'PearsonAmp')
-PearsonPhase_mag_baboon_matriz = selector(baboon_orig_array32, maps_orig_array32,
-                                  mag_baboon_matriz_all_it, 'PearsonPhase')
-
-graficar_metrica(PINCC_mag_baboon_matriz, "PINCC", leds_matriz, colors_matriz)
-graficar_metrica(MSEref_mag_baboon_matriz, "MSEref", leds_matriz, colors_matriz)
-graficar_metrica(RE_mag_baboon_matriz, "RE", leds_matriz, colors_matriz)
-graficar_metrica(PearsonAmp_mag_baboon_matriz, "Pearson amplitud", leds_matriz, colors_matriz)
-graficar_metrica(PearsonPhase_mag_baboon_matriz, "Pearson fase", leds_matriz, colors_matriz)
-
+    # Graficar y mostrar
+    fig, ax = graficar_metrica(resultados[metrica], nombre, leds_matriz, colors_matriz)
+    plt.show()  # Muestra la figura en pantalla
+    
 #%% Grafico de brazo con maps en amplitudes
 
-baboon_orig_array32 = np.array(baboon_orig, dtype=np.float32)
-maps_orig_array32 = np.array(maps_orig, dtype=np.float32)
+mag_orig = np.array(maps_orig, dtype=np.float32)
+phase_orig = np.array(baboon_orig, dtype=np.float32)
 
-PINCC_mag_maps_brazo = selector(maps_orig_array32, baboon_orig_array32,
-                                  mag_maps_brazo_all_it, 'PINCC')
-MSEref_mag_maps_brazo = selector(maps_orig_array32, baboon_orig_array32,
-                                  mag_maps_brazo_all_it, 'MSEref', x0, y0)
-RE_mag_maps_brazo = selector(maps_orig_array32, baboon_orig_array32,
-                                  mag_maps_brazo_all_it, 'RE')
-PearsonAmp_mag_maps_brazo = selector(maps_orig_array32, baboon_orig_array32,
-                                  mag_maps_brazo_all_it, 'PearsonAmp')
-PearsonPhase_mag_maps_brazo = selector(maps_orig_array32, baboon_orig_array32,
-                                  mag_maps_brazo_all_it, 'PearsonPhase')
+resultados = {}
+for metrica, dominio, nombre in metricas:
+    # Llamada uniforme usando argumentos explícitos por nombre
+    resultados[metrica] = selector(mag_orig, phase_orig, 
+                                   mag_maps_brazo_all_it, metrica, 
+                                   px_x0=x0, px_y0=y0, dominio=dominio)
 
-graficar_metrica(PINCC_mag_maps_brazo, "PINCC", leds_brazo, colors_brazo)
-graficar_metrica(MSEref_mag_maps_brazo, "MSEref", leds_brazo, colors_brazo)
-graficar_metrica(RE_mag_maps_brazo, "RE", leds_brazo, colors_brazo)
-graficar_metrica(PearsonAmp_mag_maps_brazo, "Pearson amplitud", leds_brazo, colors_brazo)
-graficar_metrica(PearsonPhase_mag_maps_brazo, "Pearson fase", leds_brazo, colors_brazo)
+    # Graficar y mostrar
+    fig, ax = graficar_metrica(resultados[metrica], nombre, leds_brazo, colors_brazo)
+    plt.show()  # Muestra la figura en pantalla
 
 #%% Grafico de matriz con maps en amplitudes
 
-baboon_orig_array32 = np.array(baboon_orig, dtype=np.float32)
-maps_orig_array32 = np.array(maps_orig, dtype=np.float32)
+resultados = {}
+for metrica, dominio, nombre in metricas:
+    # Llamada uniforme usando argumentos explícitos por nombre
+    resultados[metrica] = selector(mag_orig, phase_orig, 
+                                   mag_maps_matriz_all_it, metrica, 
+                                   px_x0=x0, px_y0=y0, dominio=dominio)
 
-PINCC_mag_maps_matriz = selector(maps_orig_array32, baboon_orig_array32,
-                                  mag_maps_matriz_all_it, 'PINCC')
-MSEref_mag_maps_matriz = selector(maps_orig_array32, baboon_orig_array32,
-                                  mag_maps_matriz_all_it, 'MSEref', x0, y0)
-RE_mag_maps_matriz = selector(maps_orig_array32, baboon_orig_array32,
-                                  mag_maps_matriz_all_it, 'RE')
-PearsonAmp_mag_maps_matriz = selector(maps_orig_array32, baboon_orig_array32,
-                                  mag_maps_matriz_all_it, 'PearsonAmp')
-PearsonPhase_mag_maps_matriz = selector(maps_orig_array32, baboon_orig_array32,
-                                  mag_maps_matriz_all_it, 'PearsonPhase')
-
-graficar_metrica(PINCC_mag_maps_matriz, "PINCC", leds_matriz, colors_matriz)
-graficar_metrica(MSEref_mag_maps_matriz, "MSEref", leds_matriz, colors_matriz)
-graficar_metrica(RE_mag_maps_matriz, "RE", leds_matriz, colors_matriz)
-graficar_metrica(PearsonAmp_mag_maps_matriz, "Pearson amplitud", leds_matriz, colors_matriz)
-graficar_metrica(PearsonPhase_mag_maps_matriz, "Pearson fase", leds_matriz, colors_matriz)
+    # Graficar y mostrar
+    fig, ax = graficar_metrica(resultados[metrica], nombre, leds_matriz, colors_matriz)
+    plt.show()  # Muestra la figura en pantalla
